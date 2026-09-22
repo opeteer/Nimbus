@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  nimbus:
+    build: .
+    container_name: nimbus
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./downloads:/app/downloads
+    environment:
+      # Set your secure password here (used for web login)
+      - NIMBUS_PASSWORD=nimbus123
+    restart: unless-stopped
