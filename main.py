@@ -127,7 +127,7 @@ def run_download(url: str, format_type: str, task_id: str):
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     is_auth = get_auth_optional(request)
-    return templates.TemplateResponse("index.html", {"request": request, "is_auth": is_auth})
+    return templates.TemplateResponse(request=request, name="index.html", context={"is_auth": is_auth})
 
 @app.post("/api/login")
 async def login(password: str = Form(...)):
