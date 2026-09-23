@@ -44,7 +44,7 @@ The easiest way to run Nimbus is via Docker. This ensures all dependencies (incl
 
 1. **Clone the repository** (or download the source files):
    ```bash
-   git clone https://github.com/yourusername/nimbus.git
+   git clone https://github.com/opeteer/nimbus.git
    cd nimbus
    ```
 
