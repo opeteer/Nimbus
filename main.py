@@ -2,12 +2,15 @@ import os
 import asyncio
 import uuid
 import json
+import zipfile
+import tempfile
 import yt_dlp
 from typing import Dict, List
 from fastapi import FastAPI, Request, Form, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.background import BackgroundTask
 from pydantic import BaseModel
 
 app = FastAPI(title="Nimbus Web Downloader")
@@ -181,6 +184,37 @@ async def list_files():
     # Sort by newest first
     files.sort(key=lambda x: x["created_at"], reverse=True)
     return {"files": files}
+
+def cleanup_file(filepath: str):
+    if os.path.exists(filepath):
+        try:
+            os.remove(filepath)
+        except Exception:
+            pass
+
+@app.get("/api/files/download/zip", dependencies=[Depends(check_auth)])
+async def download_all_zip():
+    if not os.path.exists(DOWNLOAD_DIR):
+        raise HTTPException(status_code=404, detail="No files available")
+    
+    files = [f for f in os.listdir(DOWNLOAD_DIR) if os.path.isfile(os.path.join(DOWNLOAD_DIR, f))]
+    if not files:
+        raise HTTPException(status_code=404, detail="No files available to zip")
+        
+    temp_zip = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
+    temp_zip.close()
+    
+    with zipfile.ZipFile(temp_zip.name, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for f in files:
+            filepath = os.path.join(DOWNLOAD_DIR, f)
+            zipf.write(filepath, arcname=f)
+            
+    return FileResponse(
+        path=temp_zip.name,
+        filename="nimbus_downloads.zip",
+        media_type="application/zip",
+        background=BackgroundTask(cleanup_file, temp_zip.name)
+    )
 
 @app.get("/api/files/{filename}", dependencies=[Depends(check_auth)])
 async def get_file(filename: str, download: bool = False):
