@@ -22,6 +22,7 @@
 - **Format Toggle**: Easily switch between downloading the Best Quality Video (MP4) or Audio Only (MP3/M4A) via a sleek toggle.
 - **Mini File Manager**: View, play, download to your local machine, or delete completed files directly from the dashboard.
 - **Bulk ZIP Download**: Download all stored files on the server in a single compressed `.zip` archive with one click.
+- **Bulk Delete**: Delete all completed files stored on the server with a single click and safety confirmation.
 - **Dark Mode & Glassmorphism**: A beautiful, modern UI built with Tailwind CSS and Alpine.js. Responsive on both desktop and mobile.
 - **Secure Access**: Simple yet effective password protection out of the box, perfect for exposing via reverse proxies or IP tunnels.
 - **Non-Blocking Architecture**: Queue multiple downloads simultaneously without freezing the UI.

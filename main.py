@@ -229,6 +229,20 @@ async def get_file(filename: str, download: bool = False):
         media_type = 'video/mp4' if filename.endswith('.mp4') else 'audio/mpeg' if filename.endswith('.mp3') else 'application/octet-stream'
         return FileResponse(path=filepath, media_type=media_type)
 
+@app.delete("/api/files", dependencies=[Depends(check_auth)])
+async def delete_all_files():
+    deleted_count = 0
+    if os.path.exists(DOWNLOAD_DIR):
+        for filename in os.listdir(DOWNLOAD_DIR):
+            filepath = os.path.join(DOWNLOAD_DIR, filename)
+            if os.path.isfile(filepath):
+                try:
+                    os.remove(filepath)
+                    deleted_count += 1
+                except Exception:
+                    pass
+    return {"status": "ok", "deleted_count": deleted_count}
+
 @app.delete("/api/files/{filename}", dependencies=[Depends(check_auth)])
 async def delete_file(filename: str):
     filepath = os.path.join(DOWNLOAD_DIR, filename)
