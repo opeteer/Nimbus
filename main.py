@@ -21,6 +21,10 @@ DOWNLOAD_DIR = os.getenv("NIMBUS_DOWNLOAD_DIR", "/app/downloads")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 NIMBUS_PASSWORD = os.getenv("NIMBUS_PASSWORD", "nimbus123")  # Default password for testing
 
+# Static Assets
+os.makedirs("static", exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # Templates
 templates = Jinja2Templates(directory="templates")
 

@@ -8,6 +8,9 @@ services:
       - "8000:8000"
     volumes:
       - ./downloads:/app/downloads
+      - ./templates:/app/templates
+      - ./static:/app/static
+      - ./main.py:/app/main.py
     environment:
       # Set your secure password here (used for web login)
       - NIMBUS_PASSWORD=nimbus123
