@@ -2,8 +2,16 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="theme-color" content="#09090b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Nimbus">
     <title>Nimbus Downloader</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2322d3ee%22 stroke-width=%222%22><path stroke-linecap=%22round%22 stroke-linejoin=%22round%22 d=%22M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z%22/></svg>">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
@@ -23,89 +31,194 @@
         }
     </script>
     <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 16px);
+            padding-left: env(safe-area-inset-left, 0px);
+            padding-right: env(safe-area-inset-right, 0px);
+        }
         .glass {
-            background: rgba(39, 39, 42, 0.6);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(24, 24, 27, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
+        .glass-subtle {
+            background: rgba(32, 32, 36, 0.55);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
         [x-cloak] { display: none !important; }
+
+        /* Custom smooth scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
     </style>
 </head>
 <body class="bg-zinc-950 text-zinc-300 min-h-screen font-sans antialiased selection:bg-cyan-500/30">
 
     {% if not is_auth %}
-    <!-- Login Modal -->
-    <div class="min-h-screen flex items-center justify-center p-4">
-        <div class="glass rounded-2xl p-8 w-full max-w-md shadow-2xl">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-white tracking-tight flex items-center justify-center gap-2">
-                    <svg class="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
-                    Nimbus
-                </h1>
-                <p class="text-sm text-zinc-400 mt-2">Enter password to access</p>
-            </div>
-            
-            <form action="/api/login" method="POST" class="space-y-4">
-                <div>
-                    <input type="password" name="password" required autofocus
-                        class="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all"
-                        placeholder="Password">
+    <!-- Login Screen -->
+    <div class="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-950/20 via-zinc-950 to-zinc-950">
+        <div class="glass rounded-2xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-24 -left-24 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="text-center mb-6 sm:mb-8 relative z-10">
+                <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-950/50">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
+                    </svg>
                 </div>
-                <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-medium py-3 rounded-xl transition-colors shadow-lg shadow-cyan-900/20">
-                    Unlock
+                <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Nimbus</h1>
+                <p class="text-xs sm:text-sm text-zinc-400 mt-1">Universal Media Downloader</p>
+            </div>
+
+            {% if request.query_params.get('error') %}
+            <div class="mb-5 p-3 rounded-xl bg-red-950/40 border border-red-500/30 text-red-400 text-xs sm:text-sm text-center flex items-center justify-center gap-2">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <span>Password salah. Silakan coba lagi.</span>
+            </div>
+            {% endif %}
+            
+            <form action="/api/login" method="POST" class="space-y-4 relative z-10">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-400 mb-1.5 ml-1">Password Akses</label>
+                    <input type="password" name="password" required autocomplete="current-password"
+                        class="w-full bg-zinc-900/90 border border-zinc-700/60 rounded-xl px-4 py-3.5 text-white placeholder-zinc-500 text-base focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all"
+                        placeholder="Masukkan password...">
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 active:scale-[0.98] text-white font-medium py-3.5 rounded-xl transition-all shadow-lg shadow-cyan-950/40 flex items-center justify-center gap-2">
+                    <span>Masuk ke Dashboard</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                 </button>
             </form>
         </div>
     </div>
     {% else %}
     
-    <!-- Main App -->
-    <div x-data="nimbusApp()" x-init="initApp()" class="max-w-4xl mx-auto p-4 md:p-8 space-y-8">
+    <!-- Main Dashboard -->
+    <div x-data="nimbusApp()" x-init="initApp()" class="max-w-4xl mx-auto px-3.5 py-4 sm:px-6 sm:py-8 space-y-5 sm:space-y-8">
         
         <!-- Header -->
-        <header class="flex items-center justify-between">
+        <header class="flex items-center justify-between py-1">
             <div class="flex items-center gap-3">
-                <div class="p-2 bg-zinc-900 rounded-xl border border-zinc-800">
-                    <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                <div class="p-2.5 bg-gradient-to-tr from-cyan-500/10 to-indigo-500/10 rounded-xl border border-cyan-500/20 shadow-sm">
+                    <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
+                    </svg>
                 </div>
-                <h1 class="text-2xl font-bold text-white tracking-tight">Nimbus</h1>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Nimbus</h1>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                        <span class="w-2 h-2 rounded-full transition-colors" :class="isWsConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'"></span>
+                        <span class="text-[11px] text-zinc-400" x-text="isWsConnected ? 'Live Connection' : 'Connecting...'"></span>
+                    </div>
+                </div>
             </div>
+            
             <form action="/api/logout" method="POST">
-                <button type="submit" class="text-sm text-zinc-500 hover:text-white transition-colors">Logout</button>
+                <button type="submit" class="text-xs sm:text-sm font-medium text-zinc-400 hover:text-white px-3 py-2 rounded-lg hover:bg-zinc-800/60 active:scale-95 transition-all flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                    <span>Logout</span>
+                </button>
             </form>
         </header>
 
-        <!-- Input Section -->
-        <section class="glass rounded-2xl p-2 shadow-2xl relative overflow-hidden">
-            <!-- Animated background glow -->
-            <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-indigo-500/10 opacity-50 pointer-events-none"></div>
-            
-            <form @submit.prevent="submitDownload" class="relative z-10 flex flex-col md:flex-row gap-2">
-                <div class="relative flex-grow">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <svg class="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+        <!-- Downloader Card -->
+        <section class="glass rounded-2xl p-3.5 sm:p-5 shadow-2xl relative overflow-hidden">
+            <!-- Glow background -->
+            <div class="absolute -right-20 -top-20 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <form @submit.prevent="submitDownload" class="relative z-10 space-y-3">
+                <!-- URL Input with Paste and Clear buttons -->
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                        </svg>
                     </div>
-                    <input type="url" x-model="url" required autofocus
-                        class="w-full bg-zinc-900/80 border border-zinc-700/50 rounded-xl pl-12 pr-4 py-4 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all text-lg"
-                        placeholder="Paste video URL here...">
+
+                    <input type="url" x-model="url" required
+                        class="w-full bg-zinc-900/90 border border-zinc-700/60 rounded-xl pl-11 pr-24 sm:pr-28 py-3.5 sm:py-4 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all text-base"
+                        placeholder="Paste URL YouTube, TikTok, X, IG...">
+
+                    <!-- Quick Action Buttons Inside Input -->
+                    <div class="absolute inset-y-0 right-1.5 flex items-center gap-1">
+                        <!-- Clear Button -->
+                        <button type="button" x-show="url.length > 0" @click="url = ''"
+                            class="p-2 text-zinc-400 hover:text-white rounded-lg active:scale-95 transition-all"
+                            title="Clear input">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                        
+                        <!-- 1-Tap Paste Button -->
+                        <button type="button" @click="pasteFromClipboard"
+                            class="px-2.5 py-1.5 bg-zinc-800/80 hover:bg-zinc-700 text-cyan-400 hover:text-cyan-300 rounded-lg text-xs font-medium border border-zinc-700/50 flex items-center gap-1 active:scale-95 transition-all shadow-sm"
+                            title="Paste from clipboard">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            </svg>
+                            <span class="hidden sm:inline">Paste</span>
+                        </button>
+                    </div>
                 </div>
                 
-                <div class="flex gap-2">
+                <!-- Format Toggle & Submit Button -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-1">
                     <!-- Format Toggle -->
-                    <div class="flex bg-zinc-900/80 border border-zinc-700/50 rounded-xl p-1 shrink-0">
-                        <button type="button" @click="format = 'video'" :class="{'bg-zinc-700 text-white shadow-sm': format === 'video', 'text-zinc-400 hover:text-zinc-200': format !== 'video'}" class="px-4 py-3 rounded-lg text-sm font-medium transition-all">
-                            Video
+                    <div class="grid grid-cols-2 bg-zinc-900/90 border border-zinc-700/60 rounded-xl p-1 gap-1 sm:w-64">
+                        <button type="button" @click="format = 'video'"
+                            :class="format === 'video' ? 'bg-cyan-600/90 text-white shadow-sm font-semibold' : 'text-zinc-400 hover:text-zinc-200'"
+                            class="py-2.5 sm:py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center justify-center gap-1.5 active:scale-95">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                            <span>Video (MP4)</span>
                         </button>
-                        <button type="button" @click="format = 'audio'" :class="{'bg-zinc-700 text-white shadow-sm': format === 'audio', 'text-zinc-400 hover:text-zinc-200': format !== 'audio'}" class="px-4 py-3 rounded-lg text-sm font-medium transition-all">
-                            Audio
+
+                        <button type="button" @click="format = 'audio'"
+                            :class="format === 'audio' ? 'bg-cyan-600/90 text-white shadow-sm font-semibold' : 'text-zinc-400 hover:text-zinc-200'"
+                            class="py-2.5 sm:py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center justify-center gap-1.5 active:scale-95">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                            </svg>
+                            <span>Audio (MP3)</span>
                         </button>
                     </div>
-                    
+
                     <!-- Submit Button -->
-                    <button type="submit" :disabled="isSubmitting" class="bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-4 rounded-xl font-medium transition-colors shadow-lg shadow-cyan-900/20 shrink-0 flex items-center gap-2">
-                        <span x-show="!isSubmitting">Download</span>
-                        <svg x-show="isSubmitting" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <button type="submit" :disabled="isSubmitting || !url"
+                        class="w-full sm:w-auto bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 disabled:opacity-40 disabled:cursor-not-allowed text-white px-6 py-3.5 sm:py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-cyan-950/40 flex items-center justify-center gap-2 active:scale-95">
+                        <span x-show="!isSubmitting">Mulai Download</span>
+                        <span x-show="isSubmitting">Memproses...</span>
+                        <svg x-show="!isSubmitting" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        <svg x-show="isSubmitting" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
@@ -115,236 +228,586 @@
         </section>
 
         <!-- Active Downloads -->
-        <section x-show="Object.keys(activeDownloads).length > 0" x-cloak>
-            <h2 class="text-sm font-semibold text-zinc-500 uppercase tracking-wider mb-4">Active Downloads</h2>
+        <section x-show="Object.keys(activeDownloads).length > 0" x-cloak class="space-y-3">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xs sm:text-sm font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+                    <span>Proses Download Aktif</span>
+                    <span class="bg-cyan-950/70 text-cyan-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-cyan-500/30" x-text="Object.keys(activeDownloads).length"></span>
+                </h2>
+            </div>
+
             <div class="space-y-3">
                 <template x-for="[id, task] in Object.entries(activeDownloads)" :key="id">
-                    <div class="glass rounded-xl p-4 flex flex-col gap-3">
-                        <div class="flex justify-between items-start gap-4">
+                    <div class="glass rounded-xl p-3.5 sm:p-4 flex flex-col gap-2.5">
+                        <div class="flex justify-between items-start gap-3">
                             <div class="flex-grow min-w-0">
-                                <h3 class="text-zinc-200 font-medium truncate" x-text="task.title"></h3>
-                                <div class="text-xs text-zinc-500 mt-1 flex gap-3">
-                                    <span class="flex items-center gap-1">
+                                <h3 class="text-white text-sm sm:text-base font-medium line-clamp-2 break-all" x-text="task.title || 'Mempersiapkan download...'"></h3>
+                                
+                                <div class="text-xs text-zinc-400 mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                                    <span class="flex items-center gap-1 text-cyan-400 font-mono">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                                        <span x-text="task.speed"></span>
+                                        <span x-text="task.speed || '0 MiB/s'"></span>
                                     </span>
-                                    <span class="flex items-center gap-1">
+                                    <span class="flex items-center gap-1 text-zinc-400">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        <span x-text="task.eta"></span>
+                                        <span x-text="'ETA: ' + (task.eta || '--:--')"></span>
                                     </span>
-                                    <span class="flex items-center gap-1 uppercase">
-                                        <span class="px-1.5 py-0.5 rounded bg-zinc-800 text-[10px] font-bold" x-text="task.format"></span>
-                                    </span>
+                                    <span class="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 text-[10px] font-bold uppercase tracking-wider" x-text="task.format"></span>
                                 </div>
                             </div>
+                            
                             <div class="text-right shrink-0">
-                                <span class="text-cyan-400 font-mono text-sm" x-text="task.progress_percent"></span>
+                                <span class="text-cyan-400 font-mono text-base font-semibold" x-text="task.progress_percent || '0%'"></span>
                             </div>
                         </div>
                         
-                        <!-- Progress Bar -->
-                        <div class="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
-                            <div class="h-full bg-cyan-500 transition-all duration-300 ease-out" 
-                                 :style="`width: ${task.progress_percent.replace('%','')}%`"></div>
+                        <!-- Animated Progress Bar -->
+                        <div class="h-2 w-full bg-zinc-800/80 rounded-full overflow-hidden p-0.5">
+                            <div class="h-full bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full transition-all duration-300 ease-out" 
+                                 :style="`width: ${task.progress_percent ? task.progress_percent.replace('%','') : 0}%`"></div>
                         </div>
                     </div>
                 </template>
             </div>
         </section>
 
-        <!-- Completed Files -->
-        <section>
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-sm font-semibold text-zinc-500 uppercase tracking-wider">Completed Files</h2>
+        <!-- Completed Files Section -->
+        <section class="space-y-3.5">
+            <!-- Header with actions & responsive buttons -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
-                    <a x-show="files.length > 0" href="/api/files/download/zip" class="text-xs text-cyan-400 hover:text-cyan-300 bg-cyan-950/40 border border-cyan-500/30 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                        Download All (.zip)
-                    </a>
-                    <button x-show="files.length > 0" @click="deleteAllFiles" class="text-xs text-red-400 hover:text-red-300 bg-red-950/40 border border-red-500/30 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        Delete All
+                    <h2 class="text-xs sm:text-sm font-semibold text-zinc-400 uppercase tracking-wider">File Tersimpan</h2>
+                    <span class="bg-zinc-800 text-zinc-300 text-xs px-2 py-0.5 rounded-full font-mono" x-text="files.length"></span>
+                </div>
+
+                <!-- Global Action Controls (Mobile Touch Friendly) -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <button x-show="files.length > 0" @click="downloadZip"
+                        class="text-xs font-medium text-cyan-400 hover:text-cyan-300 bg-cyan-950/40 border border-cyan-500/30 px-3 py-2 rounded-lg flex items-center gap-1.5 active:scale-95 transition-all"
+                        title="Download semua file sebagai ZIP">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        <span>Download ZIP</span>
                     </button>
-                    <button @click="fetchFiles" class="text-xs text-zinc-400 hover:text-zinc-200 flex items-center gap-1 px-2 py-1.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                        Refresh
+
+                    <button x-show="files.length > 0" @click="confirmDeleteAll"
+                        class="text-xs font-medium text-red-400 hover:text-red-300 bg-red-950/40 border border-red-500/30 px-3 py-2 rounded-lg flex items-center gap-1.5 active:scale-95 transition-all"
+                        title="Hapus semua file di server">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        <span>Hapus Semua</span>
+                    </button>
+
+                    <button @click="fetchFiles"
+                        class="text-xs font-medium text-zinc-300 hover:text-white bg-zinc-800/60 border border-zinc-700/50 px-3 py-2 rounded-lg flex items-center gap-1.5 active:scale-95 transition-all">
+                        <svg class="w-3.5 h-3.5" :class="isRefreshing ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        <span>Refresh</span>
                     </button>
                 </div>
             </div>
+
+            <!-- Search / Filter Input (visible when files exist) -->
+            <div x-show="files.length > 0" class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                <input type="text" x-model="searchQuery"
+                    placeholder="Cari file tersimpan..."
+                    class="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl pl-9 pr-8 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all">
+                <button type="button" x-show="searchQuery" @click="searchQuery = ''"
+                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-500 hover:text-white">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
             
-            <div class="glass rounded-xl overflow-hidden shadow-lg border border-zinc-800">
-                <ul class="divide-y divide-zinc-800/50 max-h-[500px] overflow-y-auto">
-                    <template x-for="file in files" :key="file.name">
-                        <li class="p-4 hover:bg-zinc-800/30 transition-colors flex items-center justify-between gap-4 group">
-                            <div class="min-w-0 flex-grow">
-                                <p class="text-sm font-medium text-zinc-300 truncate" x-text="file.name"></p>
-                                <p class="text-xs text-zinc-500 mt-0.5" x-text="formatBytes(file.size)"></p>
+            <!-- File List Container -->
+            <div class="glass rounded-2xl overflow-hidden shadow-xl border border-zinc-800/80">
+                <ul class="divide-y divide-zinc-800/60 max-h-[580px] overflow-y-auto">
+                    <template x-for="file in filteredFiles" :key="file.name">
+                        <li class="p-3.5 sm:p-4 hover:bg-zinc-800/30 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 group">
+                            
+                            <!-- File Info & Icon -->
+                            <div class="flex items-start sm:items-center gap-3 min-w-0 flex-grow">
+                                <!-- Format Icon Badge -->
+                                <div class="p-2 sm:p-2.5 rounded-xl shrink-0 mt-0.5 sm:mt-0"
+                                     :class="isAudio(file.name) ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'">
+                                    <!-- Audio icon -->
+                                    <svg x-show="isAudio(file.name)" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                                    </svg>
+                                    <!-- Video icon -->
+                                    <svg x-show="!isAudio(file.name)" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+
+                                <div class="min-w-0 flex-grow">
+                                    <p class="text-sm font-medium text-zinc-200 line-clamp-2 break-all leading-snug" x-text="file.name"></p>
+                                    <div class="flex items-center gap-2 mt-1 text-xs text-zinc-500">
+                                        <span class="font-mono text-zinc-400" x-text="formatBytes(file.size)"></span>
+                                        <span>•</span>
+                                        <span class="uppercase font-semibold text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400" x-text="getFileExt(file.name)"></span>
+                                    </div>
+                                </div>
                             </div>
                             
-                            <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button @click="previewFile(file.name)" class="p-2 text-zinc-400 hover:text-white hover:bg-zinc-700 rounded-lg transition-colors" title="Preview">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <!-- Action Buttons: Always accessible on mobile, smooth hover on desktop -->
+                            <div class="flex items-center justify-end gap-1.5 sm:gap-2 shrink-0 pt-1 sm:pt-0 border-t border-zinc-800/40 sm:border-0">
+                                <!-- Preview Button -->
+                                <button @click="previewFile(file.name)" 
+                                    class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center text-zinc-300 hover:text-white bg-zinc-800/60 hover:bg-zinc-700/80 rounded-xl transition-all active:scale-90"
+                                    title="Putar / Preview">
+                                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
                                 </button>
-                                <a :href="`/api/files/${file.name}?download=1`" class="p-2 text-zinc-400 hover:text-cyan-400 hover:bg-zinc-700 rounded-lg transition-colors" title="Download to Laptop">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+
+                                <!-- Direct Download Button -->
+                                <a :href="`/api/files/${encodeURIComponent(file.name)}?download=1`"
+                                    class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center text-zinc-300 hover:text-cyan-400 bg-zinc-800/60 hover:bg-zinc-700/80 rounded-xl transition-all active:scale-90"
+                                    title="Simpan file ke perangkat">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                    </svg>
                                 </a>
-                                <button @click="deleteFile(file.name)" class="p-2 text-zinc-400 hover:text-red-400 hover:bg-zinc-700 rounded-lg transition-colors" title="Delete">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+
+                                <!-- Share Button (Native Mobile Share API) -->
+                                <button @click="shareFile(file.name)"
+                                    class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center text-zinc-300 hover:text-emerald-400 bg-zinc-800/60 hover:bg-zinc-700/80 rounded-xl transition-all active:scale-90"
+                                    title="Bagikan file (WhatsApp/Telegram/Link)">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                                    </svg>
+                                </button>
+
+                                <!-- Delete Button -->
+                                <button @click="confirmDeleteFile(file.name)"
+                                    class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center text-zinc-400 hover:text-red-400 bg-zinc-800/60 hover:bg-zinc-700/80 rounded-xl transition-all active:scale-90"
+                                    title="Hapus file">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
                                 </button>
                             </div>
                         </li>
                     </template>
-                    <li x-show="files.length === 0" class="p-8 text-center text-zinc-500 text-sm">
-                        No downloaded files yet.
+
+                    <!-- Empty State -->
+                    <li x-show="files.length === 0" class="p-8 sm:p-12 text-center">
+                        <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                            </svg>
+                        </div>
+                        <p class="text-sm text-zinc-400 font-medium">Belum ada file yang diunduh</p>
+                        <p class="text-xs text-zinc-600 mt-1">Tempelkan link video atau audio di atas untuk memulai</p>
+                    </li>
+
+                    <!-- Search Not Found -->
+                    <li x-show="files.length > 0 && filteredFiles.length === 0" class="p-8 text-center text-zinc-500 text-sm">
+                        Tidak ada file yang cocok dengan pencarian "<span x-text="searchQuery"></span>".
                     </li>
                 </ul>
             </div>
         </section>
 
-        <!-- Preview Modal -->
-        <div x-show="preview.show" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div @click.away="closePreview" class="bg-zinc-900 rounded-2xl border border-zinc-800 w-full max-w-4xl overflow-hidden shadow-2xl">
-                <div class="flex justify-between items-center p-4 border-b border-zinc-800">
-                    <h3 class="text-zinc-200 font-medium truncate pr-4" x-text="preview.filename"></h3>
-                    <button @click="closePreview" class="text-zinc-500 hover:text-white">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        <!-- Preview Modal (Responsive & Mobile-Ready) -->
+        <div x-show="preview.show" x-cloak 
+            class="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/85 backdrop-blur-md"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0">
+            
+            <div @click.away="closePreview" 
+                class="bg-zinc-900 rounded-2xl border border-zinc-800 w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+                
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center p-3.5 sm:p-4 border-b border-zinc-800 shrink-0">
+                    <div class="min-w-0 pr-3">
+                        <h3 class="text-white text-sm sm:text-base font-medium truncate" x-text="preview.filename"></h3>
+                        <p class="text-xs text-zinc-500 capitalize" x-text="preview.type + ' preview'"></p>
+                    </div>
+                    <button @click="closePreview" 
+                        class="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-800 active:scale-95 transition-all"
+                        title="Tutup">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
                     </button>
                 </div>
-                <div class="bg-black flex justify-center items-center p-4">
+
+                <!-- Modal Media Content -->
+                <div class="bg-black/95 flex justify-center items-center p-2 sm:p-4 overflow-y-auto flex-grow">
                     <template x-if="preview.type === 'video'">
-                        <video :src="preview.url" controls autoplay class="max-h-[60vh] w-auto max-w-full rounded"></video>
+                        <video :src="preview.url" controls autoplay playsinline webkit-playsinline 
+                            class="max-h-[62vh] w-auto max-w-full rounded-xl shadow-lg"></video>
                     </template>
                     <template x-if="preview.type === 'audio'">
-                        <audio :src="preview.url" controls autoplay class="w-full max-w-md my-8"></audio>
+                        <div class="w-full max-w-md py-8 px-4 flex flex-col items-center gap-6">
+                            <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center shadow-xl shadow-cyan-950/60 animate-pulse">
+                                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                                </svg>
+                            </div>
+                            <audio :src="preview.url" controls autoplay class="w-full"></audio>
+                        </div>
                     </template>
                 </div>
+
+                <!-- Modal Footer with Quick Actions -->
+                <div class="p-3 sm:p-4 border-t border-zinc-800 bg-zinc-900/90 flex items-center justify-between gap-2 shrink-0">
+                    <button @click="shareFile(preview.filename)"
+                        class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-xl text-xs sm:text-sm font-medium flex items-center gap-2 active:scale-95 transition-all">
+                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                        </svg>
+                        <span>Bagikan</span>
+                    </button>
+
+                    <div class="flex items-center gap-2">
+                        <a :href="`/api/files/${encodeURIComponent(preview.filename)}?download=1`"
+                            class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs sm:text-sm font-medium flex items-center gap-2 active:scale-95 transition-all shadow-md shadow-cyan-950/40">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            <span>Download File</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Confirmation Modal (Modern & Mobile Bottom-Sheet friendly) -->
+        <div x-show="confirmModal.show" x-cloak
+            class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0">
+            
+            <div @click.away="confirmModal.show = false"
+                class="glass rounded-2xl p-5 sm:p-6 w-full max-w-sm sm:max-w-md shadow-2xl border border-zinc-700/60 space-y-4">
+                <div class="flex items-start gap-3.5">
+                    <div class="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </div>
+                    <div class="min-w-0">
+                        <h4 class="text-base font-semibold text-white" x-text="confirmModal.title"></h4>
+                        <p class="text-xs sm:text-sm text-zinc-400 mt-1 line-clamp-3 break-all" x-text="confirmModal.message"></p>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2.5 pt-2">
+                    <button type="button" @click="confirmModal.show = false"
+                        class="flex-1 sm:flex-initial px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium text-xs sm:text-sm rounded-xl active:scale-95 transition-all">
+                        Batal
+                    </button>
+                    <button type="button" @click="executeConfirmAction"
+                        class="flex-1 sm:flex-initial px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-medium text-xs sm:text-sm rounded-xl active:scale-95 transition-all shadow-lg shadow-red-950/40">
+                        Ya, Hapus
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Toast Notifications (Mobile & Desktop) -->
+        <div class="fixed bottom-5 inset-x-0 z-50 flex justify-center px-4 pointer-events-none">
+            <div x-show="toast.show" x-cloak
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-y-5 scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                x-transition:leave-end="opacity-0 translate-y-5 scale-95"
+                :class="{
+                    'bg-zinc-900/95 border-emerald-500/40 text-emerald-300': toast.type === 'success',
+                    'bg-zinc-900/95 border-red-500/40 text-red-300': toast.type === 'error',
+                    'bg-zinc-900/95 border-cyan-500/40 text-cyan-300': toast.type === 'info',
+                    'bg-zinc-900/95 border-amber-500/40 text-amber-300': toast.type === 'warning'
+                }"
+                class="pointer-events-auto border rounded-2xl px-4 py-3 shadow-2xl backdrop-blur-xl flex items-center gap-2.5 max-w-sm sm:max-w-md w-full">
+                
+                <!-- Status icon -->
+                <svg x-show="toast.type === 'success'" class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <svg x-show="toast.type === 'error'" class="w-5 h-5 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <svg x-show="toast.type === 'info'" class="w-5 h-5 text-cyan-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <svg x-show="toast.type === 'warning'" class="w-5 h-5 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+
+                <p class="text-xs sm:text-sm font-medium flex-grow break-words" x-text="toast.message"></p>
+                <button type="button" @click="toast.show = false" class="text-zinc-500 hover:text-white p-1 rounded-lg">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
             </div>
         </div>
 
     </div>
 
+    <!-- Application Script -->
     <script>
         function nimbusApp() {
             return {
                 url: '',
                 format: 'video',
                 isSubmitting: false,
+                isRefreshing: false,
+                isWsConnected: false,
                 activeDownloads: {},
                 files: [],
+                searchQuery: '',
                 ws: null,
                 preview: { show: false, url: '', filename: '', type: 'video' },
+                confirmModal: { show: false, title: '', message: '', action: null },
+                toast: { show: false, message: '', type: 'info', timer: null },
 
                 initApp() {
                     this.fetchFiles();
                     this.connectWebSocket();
                 },
 
+                // Filtered files based on search
+                get filteredFiles() {
+                    if (!this.searchQuery.trim()) {
+                        return this.files;
+                    }
+                    const q = this.searchQuery.toLowerCase();
+                    return this.files.filter(f => f.name.toLowerCase().includes(q));
+                },
+
+                showToast(message, type = 'info') {
+                    this.toast.message = message;
+                    this.toast.type = type;
+                    this.toast.show = true;
+                    if (this.toast.timer) clearTimeout(this.toast.timer);
+                    this.toast.timer = setTimeout(() => {
+                        this.toast.show = false;
+                    }, 4000);
+                },
+
+                // 1-Tap Paste from clipboard (Mobile superpower)
+                async pasteFromClipboard() {
+                    try {
+                        if (navigator.clipboard && navigator.clipboard.readText) {
+                            const text = await navigator.clipboard.readText();
+                            if (text && text.trim()) {
+                                this.url = text.trim();
+                                this.showToast('Tautan berhasil ditempel dari clipboard!', 'success');
+                                return;
+                            }
+                        }
+                        this.showToast('Clipboard kosong atau izin belum diberikan', 'warning');
+                    } catch (e) {
+                        this.showToast('Tidak dapat membaca clipboard, silakan tempel manual', 'warning');
+                    }
+                },
+
                 async submitDownload() {
-                    if (!this.url) return;
+                    if (!this.url.trim()) return;
                     this.isSubmitting = true;
                     try {
                         const res = await fetch('/api/download', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ url: this.url, format: this.format })
+                            body: JSON.stringify({ url: this.url.trim(), format: this.format })
                         });
                         if (res.ok) {
+                            this.showToast('Download dimulai!', 'success');
                             this.url = ''; // Clear input on success
                         } else {
-                            alert('Failed to start download');
+                            const data = await res.json().catch(() => ({}));
+                            this.showToast(data.detail || 'Gagal memulai download', 'error');
                         }
                     } catch (e) {
-                        alert('Network error');
+                        this.showToast('Terjadi gangguan jaringan', 'error');
                     }
                     this.isSubmitting = false;
                 },
 
                 async fetchFiles() {
+                    this.isRefreshing = true;
                     try {
                         const res = await fetch('/api/files');
                         if (res.ok) {
                             const data = await res.json();
-                            this.files = data.files;
+                            this.files = data.files || [];
                         }
                     } catch (e) {
                         console.error('Failed to fetch files');
                     }
+                    setTimeout(() => { this.isRefreshing = false; }, 300);
                 },
 
-                async deleteFile(filename) {
-                    if (!confirm(`Delete ${filename}?`)) return;
-                    try {
-                        const res = await fetch(`/api/files/${encodeURIComponent(filename)}`, { method: 'DELETE' });
-                        if (res.ok) {
-                            this.fetchFiles();
+                // Native Mobile Share API
+                async shareFile(filename) {
+                    const fileUrl = `${window.location.origin}/api/files/${encodeURIComponent(filename)}`;
+                    if (navigator.share) {
+                        try {
+                            await navigator.share({
+                                title: filename,
+                                text: `Download ${filename}`,
+                                url: fileUrl
+                            });
+                            this.showToast('Berhasil membagikan file!', 'success');
+                            return;
+                        } catch (err) {
+                            if (err.name === 'AbortError') return; // User cancelled share
                         }
-                    } catch (e) {
-                        console.error('Delete failed');
                     }
+                    // Fallback to copy link
+                    this.copyLink(filename);
                 },
 
-                async deleteAllFiles() {
-                    if (!confirm('Are you sure you want to delete ALL downloaded files from the server? This action cannot be undone.')) return;
+                async copyLink(filename) {
+                    const fileUrl = `${window.location.origin}/api/files/${encodeURIComponent(filename)}`;
                     try {
-                        const res = await fetch('/api/files', { method: 'DELETE' });
-                        if (res.ok) {
-                            this.fetchFiles();
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            await navigator.clipboard.writeText(fileUrl);
+                            this.showToast('Tautan file langsung disalin ke clipboard!', 'success');
+                            return;
                         }
-                    } catch (e) {
-                        console.error('Delete all failed');
+                    } catch (e) {}
+                    prompt('Salin tautan file berikut:', fileUrl);
+                },
+
+                downloadZip() {
+                    window.location.href = '/api/files/download/zip';
+                    this.showToast('Menyiapkan file ZIP untuk diunduh...', 'info');
+                },
+
+                confirmDeleteFile(filename) {
+                    this.confirmModal = {
+                        show: true,
+                        title: 'Hapus File?',
+                        message: `Apakah Anda yakin ingin menghapus "${filename}"? File akan dihapus permanen dari server.`,
+                        action: async () => {
+                            try {
+                                const res = await fetch(`/api/files/${encodeURIComponent(filename)}`, { method: 'DELETE' });
+                                if (res.ok) {
+                                    this.showToast('File berhasil dihapus', 'success');
+                                    this.fetchFiles();
+                                } else {
+                                    this.showToast('Gagal menghapus file', 'error');
+                                }
+                            } catch (e) {
+                                this.showToast('Gagal menghubungi server', 'error');
+                            }
+                        }
+                    };
+                },
+
+                confirmDeleteAll() {
+                    this.confirmModal = {
+                        show: true,
+                        title: 'Hapus SEMUA File?',
+                        message: `PERINGATAN: Semua (${this.files.length}) file yang telah diunduh di server akan dihapus secara permanen. Tindakan ini tidak dapat dibatalkan!`,
+                        action: async () => {
+                            try {
+                                const res = await fetch('/api/files', { method: 'DELETE' });
+                                if (res.ok) {
+                                    this.showToast('Semua file berhasil dibersihkan', 'success');
+                                    this.fetchFiles();
+                                } else {
+                                    this.showToast('Gagal menghapus file', 'error');
+                                }
+                            } catch (e) {
+                                this.showToast('Gagal menghubungi server', 'error');
+                            }
+                        }
+                    };
+                },
+
+                async executeConfirmAction() {
+                    if (this.confirmModal.action) {
+                        const act = this.confirmModal.action;
+                        this.confirmModal.show = false;
+                        await act();
                     }
                 },
 
                 previewFile(filename) {
                     this.preview.filename = filename;
                     this.preview.url = `/api/files/${encodeURIComponent(filename)}`;
-                    this.preview.type = filename.endsWith('.mp3') || filename.endsWith('.m4a') ? 'audio' : 'video';
+                    this.preview.type = this.isAudio(filename) ? 'audio' : 'video';
                     this.preview.show = true;
                 },
 
                 closePreview() {
                     this.preview.show = false;
-                    this.preview.url = ''; // stop playback
+                    this.preview.url = ''; // Stop audio/video stream
+                },
+
+                isAudio(filename) {
+                    const ext = filename.toLowerCase();
+                    return ext.endsWith('.mp3') || ext.endsWith('.m4a') || ext.endsWith('.wav') || ext.endsWith('.aac') || ext.endsWith('.ogg');
+                },
+
+                getFileExt(filename) {
+                    const parts = filename.split('.');
+                    return parts.length > 1 ? parts.pop() : 'FILE';
                 },
 
                 connectWebSocket() {
                     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
                     this.ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
                     
+                    this.ws.onopen = () => {
+                        this.isWsConnected = true;
+                    };
+
                     this.ws.onmessage = (event) => {
-                        const state = JSON.parse(event.data);
-                        
-                        // Filter active downloads and update UI
-                        let hasCompletedOrError = false;
-                        const active = {};
-                        
-                        for (const [id, task] of Object.entries(state)) {
-                            if (task.status === 'completed' || task.status === 'error') {
-                                if (!this.activeDownloads[id] || this.activeDownloads[id].status !== task.status) {
-                                    hasCompletedOrError = true;
+                        try {
+                            const state = JSON.parse(event.data);
+                            let hasCompletedOrError = false;
+                            const active = {};
+                            
+                            for (const [id, task] of Object.entries(state)) {
+                                if (task.status === 'completed') {
+                                    if (!this.activeDownloads[id] || this.activeDownloads[id].status !== 'completed') {
+                                        hasCompletedOrError = true;
+                                        this.showToast(`Selesai diunduh: ${task.title || 'File'}`, 'success');
+                                    }
+                                } else if (task.status === 'error') {
+                                    if (!this.activeDownloads[id] || this.activeDownloads[id].status !== 'error') {
+                                        this.showToast(`Gagal: ${task.error || 'Terjadi kesalahan saat download'}`, 'error');
+                                    }
+                                } else {
+                                    active[id] = task;
                                 }
-                            } else {
-                                active[id] = task;
                             }
-                        }
-                        
-                        this.activeDownloads = active;
-                        
-                        if (hasCompletedOrError) {
-                            this.fetchFiles(); // Refresh file list when a download finishes
+                            
+                            this.activeDownloads = active;
+                            
+                            if (hasCompletedOrError) {
+                                this.fetchFiles(); // Refresh file list when download finishes
+                            }
+                        } catch (err) {
+                            console.error('Error parsing WebSocket message', err);
                         }
                     };
 
                     this.ws.onclose = () => {
+                        this.isWsConnected = false;
                         setTimeout(() => this.connectWebSocket(), 3000); // Reconnect
+                    };
+
+                    this.ws.onerror = () => {
+                        this.isWsConnected = false;
                     };
                 },
 
-                formatBytes(bytes, decimals = 2) {
-                    if (!+bytes) return '0 Bytes';
+                formatBytes(bytes, decimals = 1) {
+                    if (!+bytes) return '0 B';
                     const k = 1024;
                     const dm = decimals < 0 ? 0 : decimals;
-                    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
                     const i = Math.floor(Math.log(bytes) / Math.log(k));
                     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
                 }

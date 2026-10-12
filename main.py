@@ -4,6 +4,7 @@ import uuid
 import json
 import zipfile
 import tempfile
+import mimetypes
 import yt_dlp
 from typing import Dict, List
 from fastapi import FastAPI, Request, Form, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
@@ -225,8 +226,9 @@ async def get_file(filename: str, download: bool = False):
     if download:
         return FileResponse(path=filepath, filename=filename, media_type='application/octet-stream')
     else:
-        # Guess media type for preview
-        media_type = 'video/mp4' if filename.endswith('.mp4') else 'audio/mpeg' if filename.endswith('.mp3') else 'application/octet-stream'
+        # Guess media type for preview and mobile streaming
+        guessed_type, _ = mimetypes.guess_type(filename)
+        media_type = guessed_type or ('video/mp4' if filename.endswith('.mp4') else 'audio/mpeg' if filename.endswith('.mp3') else 'application/octet-stream')
         return FileResponse(path=filepath, media_type=media_type)
 
 @app.delete("/api/files", dependencies=[Depends(check_auth)])
