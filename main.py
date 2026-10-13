@@ -5,6 +5,7 @@ import json
 import zipfile
 import tempfile
 import mimetypes
+import shutil
 import yt_dlp
 from typing import Dict, List, Optional
 from fastapi import FastAPI, Request, Form, Depends, HTTPException, status, WebSocket, WebSocketDisconnect, File, UploadFile
@@ -296,6 +297,27 @@ async def list_files():
     # Sort by newest first
     files.sort(key=lambda x: x["created_at"], reverse=True)
     return {"files": files}
+
+@app.get("/api/system/storage", dependencies=[Depends(check_auth)])
+async def get_storage_info():
+    total, used, free = shutil.disk_usage(DOWNLOAD_DIR)
+    files_count = 0
+    files_total_size = 0
+    if os.path.exists(DOWNLOAD_DIR):
+        for filename in os.listdir(DOWNLOAD_DIR):
+            filepath = os.path.join(DOWNLOAD_DIR, filename)
+            if os.path.isfile(filepath):
+                files_count += 1
+                files_total_size += os.path.getsize(filepath)
+    percent = round((used / total) * 100, 1) if total > 0 else 0
+    return {
+        "disk_total": total,
+        "disk_used": used,
+        "disk_free": free,
+        "disk_used_percent": percent,
+        "files_count": files_count,
+        "files_total_size": files_total_size
+    }
 
 def cleanup_file(filepath: str):
     if os.path.exists(filepath):
