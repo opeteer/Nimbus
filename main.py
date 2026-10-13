@@ -19,10 +19,32 @@ APP_VERSION = "1.0.1"
 app = FastAPI(title="Nimbus Web Downloader", version=APP_VERSION)
 
 # Configuration
-DOWNLOAD_DIR = os.getenv("NIMBUS_DOWNLOAD_DIR", "/app/downloads")
+DEFAULT_DOWNLOAD_DIR = "/app/downloads" if os.path.exists("/app") and os.access("/app", os.W_OK) else os.path.join(os.path.dirname(os.path.abspath(__file__)), "downloads")
+DOWNLOAD_DIR = os.getenv("NIMBUS_DOWNLOAD_DIR", DEFAULT_DOWNLOAD_DIR)
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 NIMBUS_PASSWORD = os.getenv("NIMBUS_PASSWORD", "nimbus123")  # Default password for testing
 COOKIES_PATH_ENV = os.getenv("NIMBUS_COOKIES_FILE")
+
+EXCLUDED_FILENAMES = {"cookies.txt"}
+EXCLUDED_EXTENSIONS = {".part", ".ytdl", ".temp", ".tmp"}
+
+def is_managed_media_file(filename: str) -> bool:
+    if filename in EXCLUDED_FILENAMES or filename.startswith("."):
+        return False
+    _, ext = os.path.splitext(filename.lower())
+    if ext in EXCLUDED_EXTENSIONS:
+        return False
+    return True
+
+def get_safe_filepath(filename: str) -> str:
+    safe_name = os.path.basename(filename)
+    if not safe_name or safe_name != filename or ".." in filename or safe_name in EXCLUDED_FILENAMES:
+        raise HTTPException(status_code=400, detail="Invalid filename")
+    real_dir = os.path.realpath(DOWNLOAD_DIR)
+    filepath = os.path.realpath(os.path.join(DOWNLOAD_DIR, safe_name))
+    if not filepath.startswith(real_dir) or not os.path.isfile(filepath):
+        raise HTTPException(status_code=404, detail="File not found")
+    return filepath
 
 def get_cookies_path() -> Optional[str]:
     candidates = []
@@ -156,7 +178,7 @@ def run_download(url: str, format_type: str, task_id: str):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             # Extract info first to get the title quickly
             info_dict = ydl.extract_info(url, download=False)
-            downloads_state[task_id]['title'] = info_dict.get('title', 'Unknown Video')
+            downloads_state[task_id]['title'] = (info_dict or {}).get('title', 'Unknown Video')
             
             # Then download
             ydl.download([url])
@@ -288,7 +310,7 @@ async def list_files():
     if os.path.exists(DOWNLOAD_DIR):
         for filename in os.listdir(DOWNLOAD_DIR):
             filepath = os.path.join(DOWNLOAD_DIR, filename)
-            if os.path.isfile(filepath):
+            if os.path.isfile(filepath) and is_managed_media_file(filename):
                 files.append({
                     "name": filename,
                     "size": os.path.getsize(filepath),
@@ -306,7 +328,7 @@ async def get_storage_info():
     if os.path.exists(DOWNLOAD_DIR):
         for filename in os.listdir(DOWNLOAD_DIR):
             filepath = os.path.join(DOWNLOAD_DIR, filename)
-            if os.path.isfile(filepath):
+            if os.path.isfile(filepath) and is_managed_media_file(filename):
                 files_count += 1
                 files_total_size += os.path.getsize(filepath)
     percent = round((used / total) * 100, 1) if total > 0 else 0
@@ -331,7 +353,7 @@ async def download_all_zip():
     if not os.path.exists(DOWNLOAD_DIR):
         raise HTTPException(status_code=404, detail="No files available")
     
-    files = [f for f in os.listdir(DOWNLOAD_DIR) if os.path.isfile(os.path.join(DOWNLOAD_DIR, f))]
+    files = [f for f in os.listdir(DOWNLOAD_DIR) if os.path.isfile(os.path.join(DOWNLOAD_DIR, f)) and is_managed_media_file(f)]
     if not files:
         raise HTTPException(status_code=404, detail="No files available to zip")
         
@@ -352,9 +374,7 @@ async def download_all_zip():
 
 @app.get("/api/files/{filename}", dependencies=[Depends(check_auth)])
 async def get_file(filename: str, download: bool = False):
-    filepath = os.path.join(DOWNLOAD_DIR, filename)
-    if not os.path.exists(filepath):
-        raise HTTPException(status_code=404, detail="File not found")
+    filepath = get_safe_filepath(filename)
         
     if download:
         return FileResponse(path=filepath, filename=filename, media_type='application/octet-stream')
@@ -370,7 +390,7 @@ async def delete_all_files():
     if os.path.exists(DOWNLOAD_DIR):
         for filename in os.listdir(DOWNLOAD_DIR):
             filepath = os.path.join(DOWNLOAD_DIR, filename)
-            if os.path.isfile(filepath):
+            if os.path.isfile(filepath) and is_managed_media_file(filename):
                 try:
                     os.remove(filepath)
                     deleted_count += 1
@@ -380,11 +400,12 @@ async def delete_all_files():
 
 @app.delete("/api/files/{filename}", dependencies=[Depends(check_auth)])
 async def delete_file(filename: str):
-    filepath = os.path.join(DOWNLOAD_DIR, filename)
-    if os.path.exists(filepath):
+    filepath = get_safe_filepath(filename)
+    try:
         os.remove(filepath)
         return {"status": "ok"}
-    raise HTTPException(status_code=404, detail="File not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete file: {str(e)}")
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -401,5 +422,8 @@ async def websocket_endpoint(websocket: WebSocket):
             # Send state every 1 second
             await websocket.send_text(json.dumps(downloads_state))
             await asyncio.sleep(1)
-    except WebSocketDisconnect:
-        connected_clients.remove(websocket)
+    except Exception:
+        pass
+    finally:
+        if websocket in connected_clients:
+            connected_clients.remove(websocket)

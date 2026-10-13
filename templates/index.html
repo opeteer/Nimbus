@@ -1367,16 +1367,42 @@
                     this.isDockedPlaying = false;
                 },
 
-                async copyFileName(filename) {
-                    if (!filename) return;
+                copyToClipboard(text, successMsg = 'Berhasil disalin!') {
+                    if (!text) return false;
+                    let copied = false;
                     try {
-                        if (navigator.clipboard && navigator.clipboard.writeText) {
-                            await navigator.clipboard.writeText(filename);
-                            this.showToast('Nama file berhasil disalin!', 'success');
-                            return;
-                        }
+                        const ta = document.createElement('textarea');
+                        ta.value = text;
+                        ta.style.position = 'fixed';
+                        ta.style.opacity = '0';
+                        document.body.appendChild(ta);
+                        ta.focus();
+                        ta.select();
+                        copied = document.execCommand('copy');
+                        document.body.removeChild(ta);
                     } catch (e) {}
-                    this.showToast(`File: ${filename}`, 'info');
+
+                    if (copied) {
+                        this.showToast(successMsg, 'success');
+                        return true;
+                    }
+
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(text).then(() => {
+                            this.showToast(successMsg, 'success');
+                        }).catch(() => {
+                            this.showToast(text, 'info');
+                        });
+                        return true;
+                    }
+
+                    prompt('Salin teks berikut:', text);
+                    return false;
+                },
+
+                copyFileName(filename) {
+                    if (!filename) return;
+                    this.copyToClipboard(filename, 'Nama file berhasil disalin!');
                 },
 
                 get detectedBatchUrls() {
@@ -1659,16 +1685,9 @@
                     this.copyLink(filename);
                 },
 
-                async copyLink(filename) {
+                copyLink(filename) {
                     const fileUrl = `${window.location.origin}/api/files/${encodeURIComponent(filename)}`;
-                    try {
-                        if (navigator.clipboard && navigator.clipboard.writeText) {
-                            await navigator.clipboard.writeText(fileUrl);
-                            this.showToast('Tautan file langsung disalin ke clipboard!', 'success');
-                            return;
-                        }
-                    } catch (e) {}
-                    prompt('Salin tautan file berikut:', fileUrl);
+                    this.copyToClipboard(fileUrl, 'Tautan file langsung disalin ke clipboard!');
                 },
 
                 downloadZip() {
