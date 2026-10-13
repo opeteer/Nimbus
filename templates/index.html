@@ -163,6 +163,36 @@
         }
         .mini-wave-bar:nth-child(2) { animation-delay: 0.2s; }
         .mini-wave-bar:nth-child(3) { animation-delay: 0.4s; }
+
+        /* Compact Quality Pills Bar */
+        .quality-pills-bar {
+            display: inline-flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            flex-wrap: nowrap !important;
+            gap: 2px !important;
+        }
+        .quality-pill-btn {
+            padding: 0.375rem 0.625rem !important;
+            border-radius: 0.5rem !important;
+            font-size: 0.75rem !important;
+            line-height: 1rem !important;
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+            text-align: center !important;
+            transition: all 0.15s ease-in-out !important;
+        }
+        .sidebar-quality-pills {
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 4px !important;
+            width: 100% !important;
+        }
+        .sidebar-quality-pills button {
+            flex: 1 1 0 !important;
+            text-align: center !important;
+            white-space: nowrap !important;
+        }
     </style>
 </head>
 <body class="bg-zinc-950 text-zinc-300 min-h-screen font-sans antialiased selection:bg-cyan-500/30">
@@ -442,7 +472,7 @@
                             <span>Kualitas Target:</span>
                             <span class="text-cyan-400 font-mono font-semibold uppercase" x-text="quality"></span>
                         </div>
-                        <div class="grid grid-cols-5 gap-1">
+                        <div class="sidebar-quality-pills">
                             <button type="button" @click="setQuality('best')"
                                 :class="quality === 'best' ? 'bg-cyan-600 text-white font-bold' : 'bg-zinc-900 text-zinc-400 hover:text-zinc-200 border border-zinc-800'"
                                 class="py-1 rounded text-[10px] text-center transition-all" title="Kualitas Maksimal (4K/HD)">
@@ -527,14 +557,14 @@
                     </div>
                 </div>
                 
-                <!-- Format Toggle, Quality Pills & Submit Button -->
-                <div class="space-y-3 pt-1">
-                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+                <!-- Format Toggle & Quality Selector & Submit Button -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-1">
+                    <div class="flex flex-wrap items-center gap-2">
                         <!-- Format Toggle -->
-                        <div class="grid grid-cols-2 bg-zinc-900/90 border border-zinc-700/60 rounded-xl p-1 gap-1 sm:w-64">
+                        <div class="grid grid-cols-2 bg-zinc-900/90 border border-zinc-700/60 rounded-xl p-1 gap-1 w-full sm:w-56">
                             <button type="button" @click="format = 'video'"
                                 :class="format === 'video' ? 'bg-cyan-600/90 text-white shadow-sm font-semibold' : 'text-zinc-400 hover:text-zinc-200'"
-                                class="py-2.5 sm:py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center justify-center gap-1.5 active:scale-95">
+                                class="py-2 px-3 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 active:scale-95">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                                 </svg>
@@ -543,7 +573,7 @@
 
                             <button type="button" @click="format = 'audio'"
                                 :class="format === 'audio' ? 'bg-cyan-600/90 text-white shadow-sm font-semibold' : 'text-zinc-400 hover:text-zinc-200'"
-                                class="py-2.5 sm:py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center justify-center gap-1.5 active:scale-95">
+                                class="py-2 px-3 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 active:scale-95">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
                                 </svg>
@@ -551,71 +581,49 @@
                             </button>
                         </div>
 
-                        <!-- Submit Button -->
-                        <button type="submit" :disabled="isSubmitting || !url"
-                            class="w-full sm:w-auto bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 disabled:opacity-40 disabled:cursor-not-allowed text-white px-6 py-3.5 sm:py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-cyan-950/40 flex items-center justify-center gap-2 active:scale-95">
-                            <span x-show="!isSubmitting">Mulai Download</span>
-                            <span x-show="isSubmitting">Memproses...</span>
-                            <svg x-show="!isSubmitting" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                            </svg>
-                            <svg x-show="isSubmitting" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" width="16" height="16">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <!-- Video Quality Selector Row (When Video mode is active) -->
-                    <div x-show="format === 'video'" x-transition class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3.5 py-2.5 bg-zinc-900/60 border border-zinc-800/80 rounded-xl">
-                        <div class="flex items-center gap-1.5 text-xs text-zinc-400">
-                            <svg class="w-3.5 h-3.5 text-cyan-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
-                            </svg>
-                            <span class="font-medium">Kualitas Video:</span>
-                        </div>
-                        <div class="grid grid-cols-5 gap-1.5 sm:flex sm:items-center sm:gap-1.5">
+                        <!-- Video Quality Segmented Pills (Sleek, Compact, Inline) -->
+                        <div x-show="format === 'video'" x-cloak class="quality-pills-bar bg-zinc-900/90 border border-zinc-700/60 rounded-xl p-1">
                             <button type="button" @click="setQuality('best')"
-                                :class="quality === 'best' ? 'bg-cyan-600 text-white shadow-sm font-semibold border-cyan-500/50' : 'bg-zinc-800/70 text-zinc-400 hover:text-zinc-200 border-zinc-700/60'"
-                                class="px-2.5 py-1.5 rounded-lg text-xs border transition-all active:scale-95 text-center flex items-center justify-center gap-1"
-                                title="Kualitas Terbaik (Hingga 4K/8K)">
-                                <span>Max</span>
-                                <span class="hidden md:inline text-[10px] opacity-75 font-mono">4K</span>
+                                :class="quality === 'best' ? 'bg-cyan-600 text-white shadow-sm font-semibold' : 'text-zinc-400 hover:text-zinc-200'"
+                                class="quality-pill-btn active:scale-95" title="Kualitas Terbaik (Max / 4K)">
+                                Max
                             </button>
                             <button type="button" @click="setQuality('1080p')"
-                                :class="quality === '1080p' ? 'bg-cyan-600 text-white shadow-sm font-semibold border-cyan-500/50' : 'bg-zinc-800/70 text-zinc-400 hover:text-zinc-200 border-zinc-700/60'"
-                                class="px-2.5 py-1.5 rounded-lg text-xs border transition-all active:scale-95 text-center"
-                                title="Full HD (1080p)">
+                                :class="quality === '1080p' ? 'bg-cyan-600 text-white shadow-sm font-semibold' : 'text-zinc-400 hover:text-zinc-200'"
+                                class="quality-pill-btn active:scale-95" title="Full HD (1080p)">
                                 1080p
                             </button>
                             <button type="button" @click="setQuality('720p')"
-                                :class="quality === '720p' ? 'bg-cyan-600 text-white shadow-sm font-semibold border-cyan-500/50' : 'bg-zinc-800/70 text-zinc-400 hover:text-zinc-200 border-zinc-700/60'"
-                                class="px-2.5 py-1.5 rounded-lg text-xs border transition-all active:scale-95 text-center"
-                                title="HD (720p)">
+                                :class="quality === '720p' ? 'bg-cyan-600 text-white shadow-sm font-semibold' : 'text-zinc-400 hover:text-zinc-200'"
+                                class="quality-pill-btn active:scale-95" title="HD (720p)">
                                 720p
                             </button>
                             <button type="button" @click="setQuality('480p')"
-                                :class="quality === '480p' ? 'bg-cyan-600 text-white shadow-sm font-semibold border-cyan-500/50' : 'bg-zinc-800/70 text-zinc-400 hover:text-zinc-200 border-zinc-700/60'"
-                                class="px-2.5 py-1.5 rounded-lg text-xs border transition-all active:scale-95 text-center"
-                                title="SD (480p)">
+                                :class="quality === '480p' ? 'bg-cyan-600 text-white shadow-sm font-semibold' : 'text-zinc-400 hover:text-zinc-200'"
+                                class="quality-pill-btn active:scale-95" title="SD (480p)">
                                 480p
                             </button>
                             <button type="button" @click="setQuality('360p')"
-                                :class="quality === '360p' ? 'bg-cyan-600 text-white shadow-sm font-semibold border-cyan-500/50' : 'bg-zinc-800/70 text-zinc-400 hover:text-zinc-200 border-zinc-700/60'"
-                                class="px-2.5 py-1.5 rounded-lg text-xs border transition-all active:scale-95 text-center"
-                                title="Hemat Kuota (360p)">
+                                :class="quality === '360p' ? 'bg-cyan-600 text-white shadow-sm font-semibold' : 'text-zinc-400 hover:text-zinc-200'"
+                                class="quality-pill-btn active:scale-95" title="Hemat Kuota (360p)">
                                 360p
                             </button>
                         </div>
                     </div>
 
-                    <!-- Audio Info Badge (When Audio mode is active) -->
-                    <div x-show="format === 'audio'" x-transition class="flex items-center justify-between px-3.5 py-2.5 bg-zinc-900/60 border border-zinc-800/80 rounded-xl text-xs text-zinc-400">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-                            <span>Ekstraksi audio otomatis: <strong class="text-white">MP3 High Quality (192 kbps)</strong> via FFmpeg</span>
-                        </div>
-                    </div>
+                    <!-- Submit Button -->
+                    <button type="submit" :disabled="isSubmitting || !url"
+                        class="w-full sm:w-auto bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 disabled:opacity-40 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-cyan-950/40 flex items-center justify-center gap-2 active:scale-95 shrink-0">
+                        <span x-show="!isSubmitting">Mulai Download</span>
+                        <span x-show="isSubmitting">Memproses...</span>
+                        <svg x-show="!isSubmitting" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        <svg x-show="isSubmitting" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" width="16" height="16">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
                 </div>
             </form>
         </section>
