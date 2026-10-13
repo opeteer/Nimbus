@@ -14,4 +14,6 @@ services:
     environment:
       # Set your secure password here (used for web login)
       - NIMBUS_PASSWORD=nimbus123
+      # Optional: custom path to YouTube cookies.txt (default persists in ./downloads/cookies.txt)
+      # - NIMBUS_COOKIES_FILE=/app/downloads/cookies.txt
     restart: unless-stopped

@@ -6,20 +6,41 @@ import zipfile
 import tempfile
 import mimetypes
 import yt_dlp
-from typing import Dict, List
-from fastapi import FastAPI, Request, Form, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
+from typing import Dict, List, Optional
+from fastapi import FastAPI, Request, Form, Depends, HTTPException, status, WebSocket, WebSocketDisconnect, File, UploadFile
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.background import BackgroundTask
 from pydantic import BaseModel
 
-app = FastAPI(title="Nimbus Web Downloader")
+APP_VERSION = "1.0.1"
+app = FastAPI(title="Nimbus Web Downloader", version=APP_VERSION)
 
 # Configuration
 DOWNLOAD_DIR = os.getenv("NIMBUS_DOWNLOAD_DIR", "/app/downloads")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 NIMBUS_PASSWORD = os.getenv("NIMBUS_PASSWORD", "nimbus123")  # Default password for testing
+COOKIES_PATH_ENV = os.getenv("NIMBUS_COOKIES_FILE")
+
+def get_cookies_path() -> Optional[str]:
+    candidates = []
+    if COOKIES_PATH_ENV:
+        candidates.append(COOKIES_PATH_ENV)
+    candidates.extend([
+        os.path.join(DOWNLOAD_DIR, "cookies.txt"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "cookies.txt"),
+        "/app/cookies.txt"
+    ])
+    for p in candidates:
+        if os.path.exists(p) and os.path.isfile(p) and os.path.getsize(p) > 0:
+            return p
+    return None
+
+def get_writable_cookies_path() -> str:
+    if COOKIES_PATH_ENV:
+        return COOKIES_PATH_ENV
+    return os.path.join(DOWNLOAD_DIR, "cookies.txt")
 
 # Static Assets
 os.makedirs("static", exist_ok=True)
@@ -96,13 +117,27 @@ def download_hook(d, task_id):
         })
 
 def run_download(url: str, format_type: str, task_id: str):
+    cookies_path = get_cookies_path()
+
     ydl_opts = {
         'outtmpl': os.path.join(DOWNLOAD_DIR, '%(title)s.%(ext)s'),
         'logger': YTDLPLogger(),
         'progress_hooks': [lambda d: download_hook(d, task_id)],
         'quiet': True,
         'no_warnings': True,
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['ios', 'android', 'mweb']
+            }
+        },
+        'http_headers': {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+            'Accept-Language': 'en-US,en;q=0.9',
+        }
     }
+    
+    if cookies_path:
+        ydl_opts['cookiefile'] = cookies_path
     
     if format_type == 'audio':
         ydl_opts['format'] = 'bestaudio/best'
@@ -127,15 +162,81 @@ def run_download(url: str, format_type: str, task_id: str):
             
         downloads_state[task_id]['status'] = 'completed'
     except Exception as e:
+        err_msg = str(e)
+        if "Sign in to confirm you're not a bot" in err_msg or "confirm you're not a bot" in err_msg:
+            err_msg = "YouTube memerlukan verifikasi bot/login. Silakan tambahkan 'cookies.txt' melalui menu Cookies di atas untuk mengunduh video ini."
         downloads_state[task_id]['status'] = 'error'
-        downloads_state[task_id]['error'] = str(e)
+        downloads_state[task_id]['error'] = err_msg
 
 # --- Routes ---
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     is_auth = get_auth_optional(request)
-    return templates.TemplateResponse(request=request, name="index.html", context={"is_auth": is_auth})
+    return templates.TemplateResponse(request=request, name="index.html", context={"is_auth": is_auth, "app_version": APP_VERSION})
+
+# --- Cookie Management Endpoints ---
+
+@app.get("/api/cookies", dependencies=[Depends(check_auth)])
+async def get_cookies_status():
+    cookie_file = get_cookies_path()
+    if cookie_file and os.path.exists(cookie_file):
+        stat = os.stat(cookie_file)
+        return {
+            "has_cookies": True,
+            "path": cookie_file,
+            "filename": os.path.basename(cookie_file),
+            "size": stat.st_size,
+            "updated_at": stat.st_mtime
+        }
+    return {
+        "has_cookies": False,
+        "path": None,
+        "filename": None,
+        "size": 0,
+        "updated_at": None
+    }
+
+@app.post("/api/cookies/upload", dependencies=[Depends(check_auth)])
+async def upload_cookies(
+    file: Optional[UploadFile] = File(None),
+    content: Optional[str] = Form(None)
+):
+    target_path = get_writable_cookies_path()
+    os.makedirs(os.path.dirname(os.path.abspath(target_path)), exist_ok=True)
+    
+    saved_bytes = 0
+    if file and file.filename:
+        file_bytes = await file.read()
+        if not file_bytes:
+            raise HTTPException(status_code=400, detail="File cookies kosong")
+        with open(target_path, "wb") as f:
+            f.write(file_bytes)
+        saved_bytes = len(file_bytes)
+    elif content and content.strip():
+        text_bytes = content.strip().encode("utf-8")
+        with open(target_path, "wb") as f:
+            f.write(text_bytes)
+        saved_bytes = len(text_bytes)
+    else:
+        raise HTTPException(status_code=400, detail="Harap pilih file cookies.txt atau tempel teks cookies")
+        
+    return {
+        "status": "ok",
+        "message": f"Cookies berhasil disimpan ({saved_bytes} bytes)",
+        "path": target_path
+    }
+
+@app.delete("/api/cookies", dependencies=[Depends(check_auth)])
+async def delete_cookies():
+    cookie_file = get_cookies_path()
+    if cookie_file and os.path.exists(cookie_file):
+        try:
+            os.remove(cookie_file)
+            return {"status": "ok", "message": "File cookies berhasil dihapus"}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Gagal menghapus file cookies: {str(e)}")
+    return {"status": "ok", "message": "Tidak ada file cookies yang aktif"}
 
 @app.post("/api/login")
 async def login(password: str = Form(...)):

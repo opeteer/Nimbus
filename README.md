@@ -20,6 +20,7 @@
 - **Universal Quick-Input**: Just paste the URL and hit Enter. Automatically detects the link and starts downloading.
 - **Real-Time Progress**: Watch your downloads progress in real-time. Displays animated progress bars, speed, and ETA powered by WebSockets.
 - **Format Toggle**: Easily switch between downloading the Best Quality Video (MP4) or Audio Only (MP3/M4A) via a sleek toggle.
+- **YouTube Cookie Manager & Anti-Bot Bypass**: Built-in support for YouTube mobile player clients and web-based `cookies.txt` upload to seamlessly bypass bot verification and age restrictions.
 - **Mini File Manager**: View, play, download to your local machine, or delete completed files directly from the dashboard.
 - **Bulk ZIP Download**: Download all stored files on the server in a single compressed `.zip` archive with one click.
 - **Bulk Delete**: Delete all completed files stored on the server with a single click and safety confirmation.
@@ -65,6 +66,13 @@ The easiest way to run Nimbus is via Docker. This ensures all dependencies (incl
 4. **Access the App**:
    Open your browser and navigate to `http://localhost:8000` (or your server's IP address).
    Log in with your configured password.
+
+## 🍪 YouTube Bot Protection & Cookies (v1.0.1)
+
+YouTube frequently enforces anti-bot challenges (*"Sign in to confirm you're not a bot"*) on server and datacenter IP addresses:
+- **Automatic Mobile Client Fallback**: Nimbus automatically configures `yt-dlp` to query YouTube via mobile player clients (`ios`, `android`, `mweb`), resolving the majority of bot detection blocks out of the box without manual configuration.
+- **Built-in Cookie Manager**: For age-restricted or strictly guarded videos, click the **Cookies** button in the dashboard header to upload a `cookies.txt` file or paste Netscape cookie text directly from your browser (e.g., using the *Get cookies.txt LOCALLY* browser extension).
+- **Zero-Downtime Persistence**: Cookies are saved to `./downloads/cookies.txt`, meaning they persist across container updates and restarts through the mounted volume. You can also manually place a `cookies.txt` into the `./downloads/` directory at any time.
 
 ## 📂 File Storage
 
