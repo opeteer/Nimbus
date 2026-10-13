@@ -104,7 +104,7 @@ class YTDLPLogger:
     def debug(self, msg):
         pass
     def warning(self, msg):
-        pass
+        print(f"yt-dlp Warning: {msg}")
     def error(self, msg):
         print(f"yt-dlp Error: {msg}")
 
@@ -128,8 +128,10 @@ def download_hook(d, task_id):
             "eta": eta_str
         })
         
-        if 'filename' in d and 'title' not in downloads_state[task_id]:
-            downloads_state[task_id]['title'] = os.path.basename(d['filename'])
+        if 'info_dict' in d and d['info_dict'].get('title'):
+            downloads_state[task_id]['title'] = d['info_dict']['title']
+        elif 'filename' in d and ('title' not in downloads_state[task_id] or downloads_state[task_id]['title'] == 'Fetching metadata...'):
+            downloads_state[task_id]['title'] = os.path.splitext(os.path.basename(d['filename']))[0]
             
     elif d['status'] == 'finished':
         downloads_state[task_id].update({
@@ -147,18 +149,29 @@ def build_ytdlp_format(format_type: str, quality: str = "best"):
     if format_type == "audio":
         return "bestaudio/best", []
     
+    # Format selection:
+    # 1. bestvideo: strictly DASH video stream (not pre-merged 360p format 18).
+    # 2. bestaudio: strictly DASH audio stream.
+    # 3. Merged together by FFmpeg into MP4 container.
+    # 4. Supports both landscape and portrait (Shorts) orientation cleanly.
     quality_map = {
-        "best": "bestvideo*+bestaudio/best",
-        "1080p": "bestvideo*[height<=1080]+bestaudio/best[height<=1080]/best",
-        "720p": "bestvideo*[height<=720]+bestaudio/best[height<=720]/best",
-        "480p": "bestvideo*[height<=480]+bestaudio/best[height<=480]/best",
-        "360p": "bestvideo*[height<=360]+bestaudio/best[height<=360]/best",
+        "best": "bestvideo+bestaudio/best",
+        "1080p": "bestvideo[height<=1080]+bestaudio/bestvideo[width<=1080]+bestaudio/best[height<=1080]/best[width<=1080]/best",
+        "720p": "bestvideo[height<=720]+bestaudio/bestvideo[width<=720]+bestaudio/best[height<=720]/best[width<=720]/best",
+        "480p": "bestvideo[height<=480]+bestaudio/bestvideo[width<=480]+bestaudio/best[height<=480]/best[width<=480]/best",
+        "360p": "bestvideo[height<=360]+bestaudio/bestvideo[width<=360]+bestaudio/best[height<=360]/best[width<=360]/best",
+    }
+    
+    sort_map = {
+        "best": ["res", "fps", "codec:avc:m4a"],
+        "1080p": ["res:1080", "fps", "codec:avc:m4a"],
+        "720p": ["res:720", "fps", "codec:avc:m4a"],
+        "480p": ["res:480", "fps", "codec:avc:m4a"],
+        "360p": ["res:360", "fps", "codec:avc:m4a"],
     }
     
     fmt = quality_map.get(quality, quality_map["best"])
-    # Prioritize resolution first, then framerate, prefer h264 for wide compatibility
-    # but seamlessly accept vp9/av1 if higher resolution or only codec available.
-    format_sort = ["res", "fps", "vcodec:h264,vp9", "acodec:m4a,aac,opus"]
+    format_sort = sort_map.get(quality, sort_map["best"])
     return fmt, format_sort
 
 def run_download(url: str, format_type: str, quality: str, task_id: str):
@@ -168,10 +181,9 @@ def run_download(url: str, format_type: str, quality: str, task_id: str):
         'outtmpl': os.path.join(DOWNLOAD_DIR, '%(title)s.%(ext)s'),
         'logger': YTDLPLogger(),
         'progress_hooks': [lambda d: download_hook(d, task_id)],
-        'quiet': True,
-        'no_warnings': True,
+        'quiet': False,
+        'no_warnings': False,
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
             'Accept-Language': 'en-US,en;q=0.9',
         }
     }
@@ -181,15 +193,17 @@ def run_download(url: str, format_type: str, quality: str, task_id: str):
         # When cookies are supplied, prioritize web client for full 4K/8K resolution
         ydl_opts['extractor_args'] = {
             'youtube': {
-                'player_client': ['web', 'android', 'ios']
+                'player_client': ['web', 'tv_simply', 'default']
             }
         }
     else:
-        # Without cookies, prioritize android (which supports 1080p/4K DASH streams),
-        # with ios, mweb, and web fallbacks to avoid bot challenge blocks.
+        # Without cookies, prioritize tv_simply (YouTube TV Cobalt client) which reliably
+        # serves 1080p/4K DASH streams without PO token challenges or bot blocks,
+        # with web and default fallbacks.
+        # DO NOT include 'ios' because iOS client only serves 360p progressive streams.
         ydl_opts['extractor_args'] = {
             'youtube': {
-                'player_client': ['android', 'ios', 'mweb', 'web']
+                'player_client': ['tv_simply', 'web', 'default']
             }
         }
     
@@ -209,12 +223,10 @@ def run_download(url: str, format_type: str, quality: str, task_id: str):
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            # Extract info first to get the title quickly
-            info_dict = ydl.extract_info(url, download=False)
-            downloads_state[task_id]['title'] = (info_dict or {}).get('title', 'Unknown Video')
-            
-            # Then download
-            ydl.download([url])
+            # Single-pass extraction and download for faster execution and less rate-limiting
+            info_dict = ydl.extract_info(url, download=True)
+            if info_dict and 'title' in info_dict:
+                downloads_state[task_id]['title'] = info_dict['title']
             
         downloads_state[task_id]['status'] = 'completed'
     except Exception as e:
