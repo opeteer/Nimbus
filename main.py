@@ -37,12 +37,15 @@ def is_managed_media_file(filename: str) -> bool:
     return True
 
 def get_safe_filepath(filename: str) -> str:
+    # Reject empty filename, path separators, null bytes, or hidden files
+    if not filename or "/" in filename or "\\" in filename or "\0" in filename:
+        raise HTTPException(status_code=400, detail="Invalid filename")
     safe_name = os.path.basename(filename)
-    if not safe_name or safe_name != filename or ".." in filename or safe_name in EXCLUDED_FILENAMES:
+    if not safe_name or safe_name != filename or safe_name in EXCLUDED_FILENAMES or safe_name.startswith("."):
         raise HTTPException(status_code=400, detail="Invalid filename")
     real_dir = os.path.realpath(DOWNLOAD_DIR)
     filepath = os.path.realpath(os.path.join(DOWNLOAD_DIR, safe_name))
-    if not filepath.startswith(real_dir) or not os.path.isfile(filepath):
+    if os.path.commonpath([real_dir, filepath]) != real_dir or filepath == real_dir or not os.path.isfile(filepath):
         raise HTTPException(status_code=404, detail="File not found")
     return filepath
 
@@ -419,7 +422,7 @@ async def download_all_zip():
         background=BackgroundTask(cleanup_file, temp_zip.name)
     )
 
-@app.get("/api/files/{filename}", dependencies=[Depends(check_auth)])
+@app.get("/api/files/{filename:path}", dependencies=[Depends(check_auth)])
 async def get_file(filename: str, download: bool = False):
     filepath = get_safe_filepath(filename)
         
@@ -445,7 +448,7 @@ async def delete_all_files():
                     pass
     return {"status": "ok", "deleted_count": deleted_count}
 
-@app.delete("/api/files/{filename}", dependencies=[Depends(check_auth)])
+@app.delete("/api/files/{filename:path}", dependencies=[Depends(check_auth)])
 async def delete_file(filename: str):
     filepath = get_safe_filepath(filename)
     try:
