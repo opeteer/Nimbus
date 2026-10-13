@@ -132,7 +132,7 @@
         /* Pulse wave animation for audio playing */
         @keyframes soundWave {
             0%, 100% { height: 4px; }
-            50% { height: 18px; }
+            50% { height: 20px; }
         }
         .wave-bar {
             width: 3px;
@@ -140,11 +140,29 @@
             border-radius: 9999px;
             display: inline-block;
             animation: soundWave 1.2s ease-in-out infinite;
+            animation-play-state: paused;
+        }
+        .wave-bar.playing {
+            animation-play-state: running;
         }
         .wave-bar:nth-child(2) { animation-delay: 0.2s; }
         .wave-bar:nth-child(3) { animation-delay: 0.4s; }
         .wave-bar:nth-child(4) { animation-delay: 0.1s; }
         .wave-bar:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes miniWave {
+            0%, 100% { height: 3px; }
+            50% { height: 14px; }
+        }
+        .mini-wave-bar {
+            width: 2.5px;
+            background: #22d3ee;
+            border-radius: 9999px;
+            display: inline-block;
+            animation: miniWave 0.9s ease-in-out infinite;
+        }
+        .mini-wave-bar:nth-child(2) { animation-delay: 0.2s; }
+        .mini-wave-bar:nth-child(3) { animation-delay: 0.4s; }
     </style>
 </head>
 <body class="bg-zinc-950 text-zinc-300 min-h-screen font-sans antialiased selection:bg-cyan-500/30">
@@ -292,6 +310,15 @@
                         </div>
                     </div>
 
+                    <!-- Critical Storage Warning Banner -->
+                    <div x-show="storage.disk_used_percent > 85" class="p-2.5 rounded-xl bg-red-950/40 border border-red-500/40 flex items-center gap-2 text-xs text-red-300">
+                        <svg class="w-4 h-4 shrink-0 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <div class="min-w-0">
+                            <p class="font-semibold text-red-200">Kapasitas Kritis</p>
+                            <p class="text-[10px] text-red-300/80 leading-tight">Sisa disk di bawah 15%. Bersihkan file lama jika perlu.</p>
+                        </div>
+                    </div>
+
                     <!-- Sisa Ruang Pill & Footprint -->
                     <div class="grid grid-cols-2 gap-2 pt-1 border-t border-zinc-800/60">
                         <div class="p-2.5 rounded-xl bg-zinc-900/70 border border-zinc-800/80">
@@ -313,8 +340,8 @@
                     </div>
 
                     <div class="space-y-1">
-                        <button type="button" @click="selectedFilter = 'all'"
-                            :class="selectedFilter === 'all' ? 'bg-cyan-600/20 text-cyan-300 border-cyan-500/40 font-semibold' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50 border-transparent'"
+                        <button type="button" @click="toggleFilter('all')"
+                            :class="selectedFilter === 'all' ? 'bg-cyan-600/20 text-cyan-300 border-cyan-500/40 font-semibold shadow-sm' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50 border-transparent'"
                             class="w-full text-left px-3 py-2 rounded-xl text-xs sm:text-sm border transition-all flex items-center justify-between active:scale-[0.98]">
                             <div class="flex items-center gap-2">
                                 <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
@@ -325,8 +352,8 @@
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-zinc-800 text-zinc-300" x-text="files.length"></span>
                         </button>
 
-                        <button type="button" @click="selectedFilter = 'video'"
-                            :class="selectedFilter === 'video' ? 'bg-cyan-600/20 text-cyan-300 border-cyan-500/40 font-semibold' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50 border-transparent'"
+                        <button type="button" @click="toggleFilter('video')"
+                            :class="selectedFilter === 'video' ? 'bg-cyan-600/20 text-cyan-300 border-cyan-500/40 font-semibold shadow-sm' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50 border-transparent'"
                             class="w-full text-left px-3 py-2 rounded-xl text-xs sm:text-sm border transition-all flex items-center justify-between active:scale-[0.98]">
                             <div class="flex items-center gap-2">
                                 <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
@@ -337,8 +364,8 @@
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-zinc-800 text-zinc-300" x-text="videoFilesCount"></span>
                         </button>
 
-                        <button type="button" @click="selectedFilter = 'audio'"
-                            :class="selectedFilter === 'audio' ? 'bg-indigo-600/20 text-indigo-300 border-indigo-500/40 font-semibold' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50 border-transparent'"
+                        <button type="button" @click="toggleFilter('audio')"
+                            :class="selectedFilter === 'audio' ? 'bg-indigo-600/20 text-indigo-300 border-indigo-500/40 font-semibold shadow-sm' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50 border-transparent'"
                             class="w-full text-left px-3 py-2 rounded-xl text-xs sm:text-sm border transition-all flex items-center justify-between active:scale-[0.98]">
                             <div class="flex items-center gap-2">
                                 <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
@@ -354,29 +381,33 @@
                     <div class="pt-2 border-t border-zinc-800/60 space-y-2">
                         <span class="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider block">Sumber Platform</span>
                         <div class="flex flex-wrap gap-1.5">
-                            <button type="button" @click="selectedPlatform = 'all'"
+                            <button type="button" @click="togglePlatform('all')"
                                 :class="selectedPlatform === 'all' ? 'bg-zinc-700 text-white font-medium' : 'bg-zinc-900/80 text-zinc-400 hover:text-zinc-200'"
                                 class="px-2.5 py-1 rounded-lg text-[11px] border border-zinc-700/60 transition-colors">
                                 Semua
                             </button>
-                            <button type="button" @click="selectedPlatform = 'youtube'"
-                                :class="selectedPlatform === 'youtube' ? 'bg-red-950/80 text-red-300 border-red-500/50' : 'bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border-zinc-700/60'"
-                                class="px-2.5 py-1 rounded-lg text-[11px] border transition-colors flex items-center gap-1">
+                            <button type="button" @click="togglePlatform('youtube')"
+                                :class="selectedPlatform === 'youtube' ? 'bg-red-950/80 text-red-300 border-red-500/50 font-medium' : 'bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border-zinc-700/60'"
+                                class="px-2.5 py-1 rounded-lg text-[11px] border transition-colors flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
                                 <span>YouTube</span>
                             </button>
-                            <button type="button" @click="selectedPlatform = 'tiktok'"
-                                :class="selectedPlatform === 'tiktok' ? 'bg-cyan-950/80 text-cyan-300 border-cyan-500/50' : 'bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border-zinc-700/60'"
-                                class="px-2.5 py-1 rounded-lg text-[11px] border transition-colors flex items-center gap-1">
+                            <button type="button" @click="togglePlatform('tiktok')"
+                                :class="selectedPlatform === 'tiktok' ? 'bg-cyan-950/80 text-cyan-300 border-cyan-500/50 font-medium' : 'bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border-zinc-700/60'"
+                                class="px-2.5 py-1 rounded-lg text-[11px] border transition-colors flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
                                 <span>TikTok</span>
                             </button>
-                            <button type="button" @click="selectedPlatform = 'instagram'"
-                                :class="selectedPlatform === 'instagram' ? 'bg-pink-950/80 text-pink-300 border-pink-500/50' : 'bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border-zinc-700/60'"
-                                class="px-2.5 py-1 rounded-lg text-[11px] border transition-colors flex items-center gap-1">
+                            <button type="button" @click="togglePlatform('instagram')"
+                                :class="selectedPlatform === 'instagram' ? 'bg-pink-950/80 text-pink-300 border-pink-500/50 font-medium' : 'bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border-zinc-700/60'"
+                                class="px-2.5 py-1 rounded-lg text-[11px] border transition-colors flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
                                 <span>Instagram</span>
                             </button>
-                            <button type="button" @click="selectedPlatform = 'twitter'"
-                                :class="selectedPlatform === 'twitter' ? 'bg-sky-950/80 text-sky-300 border-sky-500/50' : 'bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border-zinc-700/60'"
-                                class="px-2.5 py-1 rounded-lg text-[11px] border transition-colors flex items-center gap-1">
+                            <button type="button" @click="togglePlatform('twitter')"
+                                :class="selectedPlatform === 'twitter' ? 'bg-sky-950/80 text-sky-300 border-sky-500/50 font-medium' : 'bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border-zinc-700/60'"
+                                class="px-2.5 py-1 rounded-lg text-[11px] border transition-colors flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
                                 <span>X / Twitter</span>
                             </button>
                         </div>
@@ -387,7 +418,7 @@
                 <div class="glass rounded-2xl p-4 sm:p-5 shadow-xl border border-zinc-800/80 space-y-3">
                     <h2 class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Preset Unduhan</h2>
                     <div class="grid grid-cols-2 gap-2">
-                        <button type="button" @click="format = 'video'"
+                        <button type="button" @click="setFormat('video')"
                             :class="format === 'video' ? 'bg-cyan-600/20 text-cyan-300 border-cyan-500/40 font-semibold' : 'bg-zinc-900/60 text-zinc-400 hover:text-white border-zinc-800'"
                             class="p-2.5 rounded-xl border text-xs text-center transition-all flex flex-col items-center gap-1 active:scale-95">
                             <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
@@ -395,7 +426,7 @@
                             </svg>
                             <span>Video MP4</span>
                         </button>
-                        <button type="button" @click="format = 'audio'"
+                        <button type="button" @click="setFormat('audio')"
                             :class="format === 'audio' ? 'bg-cyan-600/20 text-cyan-300 border-cyan-500/40 font-semibold' : 'bg-zinc-900/60 text-zinc-400 hover:text-white border-zinc-800'"
                             class="p-2.5 rounded-xl border text-xs text-center transition-all flex flex-col items-center gap-1 active:scale-95">
                             <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
@@ -553,14 +584,6 @@
                 <div class="flex items-center gap-2 flex-wrap">
                     <h2 class="text-xs sm:text-sm font-semibold text-zinc-400 uppercase tracking-wider">File Tersimpan</h2>
                     <span class="bg-zinc-800 text-zinc-300 text-xs px-2 py-0.5 rounded-full font-mono" x-text="filteredFiles.length"></span>
-                    <template x-if="selectedFilter !== 'all' || selectedPlatform !== 'all'">
-                        <button type="button" @click="selectedFilter = 'all'; selectedPlatform = 'all'"
-                            class="flex items-center gap-1 text-[11px] bg-cyan-950/60 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded-full hover:bg-cyan-900/60 transition-colors"
-                            title="Reset filter">
-                            <span x-text="selectedFilter !== 'all' ? selectedFilter : selectedPlatform"></span>
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                        </button>
-                    </template>
                 </div>
 
                 <!-- Global Action Controls (Mobile Touch Friendly) + View Switcher -->
@@ -605,6 +628,22 @@
                 </div>
             </div>
 
+            <!-- Active Filter / Search Feedback Chip Bar -->
+            <div x-show="selectedFilter !== 'all' || selectedPlatform !== 'all' || searchQuery.trim()"
+                class="flex items-center justify-between px-3.5 py-2 bg-zinc-900/80 rounded-xl border border-zinc-800 text-xs text-zinc-300 shadow-sm">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-zinc-400">Menampilkan <strong class="text-white font-mono" x-text="filteredFiles.length"></strong> dari <span class="font-mono" x-text="files.length"></span> file</span>
+                    <span x-show="selectedFilter !== 'all'" class="px-2 py-0.5 rounded-full text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-500/30 font-medium capitalize" x-text="'Tipe: ' + selectedFilter"></span>
+                    <span x-show="selectedPlatform !== 'all'" class="px-2 py-0.5 rounded-full text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-500/30 font-medium capitalize" x-text="'Platform: ' + selectedPlatform"></span>
+                    <span x-show="searchQuery.trim()" class="px-2 py-0.5 rounded-full text-[10px] bg-zinc-800 text-zinc-300 border border-zinc-700 font-mono" x-text="'Cari: ' + searchQuery"></span>
+                </div>
+                <button type="button" @click="selectedFilter = 'all'; selectedPlatform = 'all'; searchQuery = ''"
+                    class="text-xs text-cyan-400 hover:text-cyan-300 font-medium flex items-center gap-1 hover:underline ml-2 shrink-0">
+                    <span>Reset Filter</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
             <!-- Search / Filter Input (visible when files exist) -->
             <div x-show="files.length > 0" class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
@@ -644,7 +683,17 @@
                                 </div>
 
                                 <div class="min-w-0 flex-grow">
-                                    <p class="text-sm font-medium text-zinc-200 line-clamp-2 break-all leading-snug group-hover:text-cyan-300 transition-colors" x-text="file.name"></p>
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-sm font-medium text-zinc-200 line-clamp-2 break-all leading-snug group-hover:text-cyan-300 transition-colors" x-text="file.name"></p>
+                                        <!-- Animated Mini Playing Equalizer Badge -->
+                                        <template x-if="dockedMedia.filename === file.name && isDockedPlaying">
+                                            <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/40 shrink-0">
+                                                <span class="mini-wave-bar"></span>
+                                                <span class="mini-wave-bar"></span>
+                                                <span class="mini-wave-bar"></span>
+                                            </span>
+                                        </template>
+                                    </div>
                                     <div class="flex items-center gap-2 mt-1 text-xs text-zinc-500">
                                         <span class="font-mono text-zinc-400" x-text="formatBytes(file.size)"></span>
                                         <span>•</span>
@@ -655,14 +704,22 @@
                             
                             <!-- Action Buttons -->
                             <div class="flex items-center justify-end gap-1.5 sm:gap-2 shrink-0 pt-1 sm:pt-0 border-t border-zinc-800/40 sm:border-0">
-                                <!-- Docked Play Button -->
+                                <!-- Docked Play / Pause Toggle Button -->
                                 <button @click="selectForDockedPlayer(file)" 
-                                    class="w-9 h-9 flex items-center justify-center text-zinc-300 hover:text-white bg-zinc-800/60 hover:bg-zinc-700/80 rounded-xl transition-all active:scale-90"
-                                    title="Putar di Sidebar">
-                                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
+                                    class="w-9 h-9 flex items-center justify-center rounded-xl transition-all active:scale-90"
+                                    :class="dockedMedia.filename === file.name ? 'bg-cyan-600/30 text-cyan-300 border border-cyan-500/40 shadow-sm' : 'text-zinc-300 hover:text-white bg-zinc-800/60 hover:bg-zinc-700/80'"
+                                    :title="dockedMedia.filename === file.name && isDockedPlaying ? 'Jeda pemutaran' : 'Putar di Sidebar'">
+                                    <template x-if="dockedMedia.filename === file.name && isDockedPlaying">
+                                        <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </template>
+                                    <template x-if="!(dockedMedia.filename === file.name && isDockedPlaying)">
+                                        <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </template>
                                 </button>
 
                                 <!-- Direct Download Button -->
@@ -718,7 +775,7 @@
                 <div class="media-grid">
                     <template x-for="file in filteredFiles" :key="file.name">
                         <div class="glass-subtle rounded-xl p-3 border border-zinc-800 hover:border-zinc-700 transition-all flex flex-col justify-between group hover:shadow-lg relative overflow-hidden"
-                             :class="dockedMedia.filename === file.name ? 'ring-1 ring-cyan-500/60 bg-cyan-950/20' : ''">
+                             :class="dockedMedia.filename === file.name ? 'ring-1 ring-cyan-500/60 bg-cyan-950/20 shadow-md shadow-cyan-950/30' : ''">
                             
                             <!-- Card Visual Header -->
                             <div class="h-24 rounded-lg bg-zinc-900/90 flex flex-col items-center justify-center cursor-pointer relative overflow-hidden group/card"
@@ -733,24 +790,37 @@
                                     </svg>
                                 </div>
                                 <span class="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold uppercase bg-zinc-800/80 text-zinc-300" x-text="getFileExt(file.name)"></span>
+
+                                <!-- Floating Equalizer Badge on Active Playing Card -->
+                                <template x-if="dockedMedia.filename === file.name && isDockedPlaying">
+                                    <span class="absolute top-2 left-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-cyan-950/90 border border-cyan-500/40">
+                                        <span class="mini-wave-bar"></span>
+                                        <span class="mini-wave-bar"></span>
+                                        <span class="mini-wave-bar"></span>
+                                    </span>
+                                </template>
                             </div>
 
                             <!-- Card Body -->
                             <div class="mt-2.5 min-w-0">
                                 <h4 class="text-xs font-medium text-zinc-200 line-clamp-2 break-all cursor-pointer hover:text-cyan-300 leading-snug"
                                     @click="selectForDockedPlayer(file)"
+                                    :title="file.name"
                                     x-text="file.name"></h4>
                                 <div class="flex items-center justify-between mt-2 pt-2 border-t border-zinc-800/60 text-[11px] text-zinc-500">
                                     <span class="font-mono text-zinc-400" x-text="formatBytes(file.size)"></span>
                                     
                                     <div class="flex items-center gap-1">
-                                        <button @click="selectForDockedPlayer(file)" class="p-1 hover:text-cyan-400 text-zinc-400" title="Putar">
+                                        <button @click="selectForDockedPlayer(file)" class="p-1 hover:text-cyan-400 text-zinc-400 transition-colors" title="Putar di Sidebar">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>
                                         </button>
-                                        <a :href="`/api/files/${encodeURIComponent(file.name)}?download=1`" class="p-1 hover:text-cyan-400 text-zinc-400" title="Download">
+                                        <a :href="`/api/files/${encodeURIComponent(file.name)}?download=1`" class="p-1 hover:text-cyan-400 text-zinc-400 transition-colors" title="Download">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                         </a>
-                                        <button @click="confirmDeleteFile(file.name)" class="p-1 hover:text-red-400 text-zinc-500" title="Hapus">
+                                        <button @click="shareFile(file.name)" class="p-1 hover:text-emerald-400 text-zinc-400 transition-colors" title="Bagikan file">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                                        </button>
+                                        <button @click="confirmDeleteFile(file.name)" class="p-1 hover:text-red-400 text-zinc-500 transition-colors" title="Hapus">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                         </button>
                                     </div>
@@ -813,26 +883,38 @@
 
                     <!-- If Media Selected -->
                     <div x-show="dockedMedia.url" class="glass rounded-2xl p-4 sm:p-5 shadow-xl border border-zinc-800/80 space-y-4">
-                        <!-- Player Header with Pop-Out button -->
+                        <!-- Player Header with Pop-Out and Close buttons -->
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-                                <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Pemutar Media</span>
+                                <span class="w-2 h-2 rounded-full transition-colors" :class="isDockedPlaying ? 'bg-emerald-400 animate-pulse' : 'bg-cyan-400'"></span>
+                                <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider" x-text="isDockedPlaying ? 'Sedang Memutar' : 'Pemutar Media'"></span>
                             </div>
-                            <button type="button" @click="previewFile(dockedMedia.filename)"
-                                class="text-xs text-zinc-400 hover:text-white flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-zinc-800/80 transition-colors"
-                                title="Buka preview layar penuh">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
-                                </svg>
-                                <span class="text-[11px]">Pop-Out</span>
-                            </button>
+                            <div class="flex items-center gap-1">
+                                <button type="button" @click="previewFile(dockedMedia.filename)"
+                                    class="text-xs text-zinc-400 hover:text-white flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-zinc-800/80 transition-colors"
+                                    title="Buka preview layar penuh">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                                    </svg>
+                                    <span class="text-[11px]">Pop-Out</span>
+                                </button>
+                                <button type="button" @click="closeDockedPlayer"
+                                    class="p-1 rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/80 transition-colors"
+                                    title="Tutup player">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Video View -->
                         <template x-if="dockedMedia.type === 'video'">
                             <div class="rounded-xl overflow-hidden bg-black aspect-video flex items-center justify-center border border-zinc-800 shadow-inner">
                                 <video id="dockedVideo" :src="dockedMedia.url" controls playsinline
+                                    @play="isDockedPlaying = true"
+                                    @pause="isDockedPlaying = false"
+                                    @ended="isDockedPlaying = false"
                                     class="w-full h-full max-h-[220px] object-contain"></video>
                             </div>
                         </template>
@@ -845,14 +927,17 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
                                     </svg>
                                 </div>
-                                <div class="flex items-center gap-1 h-5 my-1">
-                                    <span class="wave-bar"></span>
-                                    <span class="wave-bar"></span>
-                                    <span class="wave-bar"></span>
-                                    <span class="wave-bar"></span>
-                                    <span class="wave-bar"></span>
+                                <div class="flex items-center gap-1 h-5 my-1" :title="isDockedPlaying ? 'Audio memutar' : 'Audio dijeda'">
+                                    <span class="wave-bar" :class="isDockedPlaying ? 'playing' : ''"></span>
+                                    <span class="wave-bar" :class="isDockedPlaying ? 'playing' : ''"></span>
+                                    <span class="wave-bar" :class="isDockedPlaying ? 'playing' : ''"></span>
+                                    <span class="wave-bar" :class="isDockedPlaying ? 'playing' : ''"></span>
+                                    <span class="wave-bar" :class="isDockedPlaying ? 'playing' : ''"></span>
                                 </div>
-                                <audio id="dockedAudio" :src="dockedMedia.url" controls class="w-full"></audio>
+                                <audio id="dockedAudio" :src="dockedMedia.url" controls class="w-full"
+                                    @play="isDockedPlaying = true"
+                                    @pause="isDockedPlaying = false"
+                                    @ended="isDockedPlaying = false"></audio>
                             </div>
                         </template>
 
@@ -872,7 +957,15 @@
                         <!-- Inspector Info -->
                         <div class="space-y-2 pt-2 border-t border-zinc-800/60 text-xs">
                             <div>
-                                <span class="text-[10px] uppercase tracking-wider text-zinc-500 block">Nama File</span>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] uppercase tracking-wider text-zinc-500">Nama File</span>
+                                    <button type="button" @click="copyFileName(dockedMedia.filename)"
+                                        class="text-[11px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
+                                        title="Salin nama file">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                                        <span>Salin</span>
+                                    </button>
+                                </div>
                                 <p class="text-zinc-200 font-medium break-all line-clamp-3 leading-snug mt-0.5" x-text="dockedMedia.filename"></p>
                             </div>
                             <div class="grid grid-cols-2 gap-2 text-zinc-400">
@@ -912,24 +1005,57 @@
                 </div>
 
                 <!-- Tab 2: Batch URL Downloader -->
-                <div x-show="rightTab === 'batch'" class="glass rounded-2xl p-4 sm:p-5 shadow-xl border border-zinc-800/80 space-y-3">
-                    <div class="flex items-center gap-2">
-                        <div class="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                            </svg>
+                <div x-show="rightTab === 'batch'" class="glass rounded-2xl p-4 sm:p-5 shadow-xl border border-zinc-800/80 space-y-3.5">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xs sm:text-sm font-semibold text-white">Batch Downloader</h3>
+                                <p class="text-[11px] text-zinc-400">Unduh banyak URL sekaligus</p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="text-xs sm:text-sm font-semibold text-white">Batch Downloader</h3>
-                            <p class="text-[11px] text-zinc-400">Unduh banyak URL sekaligus</p>
-                        </div>
+
+                        <!-- Detected URL Count Badge -->
+                        <span x-show="detectedBatchUrls.length > 0"
+                              class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-500/30"
+                              x-text="`${detectedBatchUrls.length} URL siap`"></span>
                     </div>
 
                     <div class="space-y-1.5">
-                        <label class="block text-[11px] text-zinc-400 font-medium">Tempel tautan (1 URL per baris):</label>
+                        <div class="flex items-center justify-between text-[11px]">
+                            <label class="text-zinc-400 font-medium">Tempel tautan (1 URL per baris):</label>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" @click="pasteBatchFromClipboard"
+                                    class="text-cyan-400 hover:text-cyan-300 font-medium flex items-center gap-1 active:scale-95 transition-all">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                    <span>Paste</span>
+                                </button>
+                                <span x-show="batchUrls.length > 0" class="text-zinc-600">•</span>
+                                <button type="button" x-show="batchUrls.length > 0" @click="clearBatchUrls"
+                                    class="text-zinc-400 hover:text-red-400 transition-colors">
+                                    Hapus
+                                </button>
+                            </div>
+                        </div>
                         <textarea x-model="batchUrls" rows="6"
                             placeholder="https://www.youtube.com/watch?v=...&#10;https://www.tiktok.com/@...&#10;https://x.com/.../status/..."
                             class="w-full bg-zinc-900/90 border border-zinc-700/60 rounded-xl p-3 text-xs font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 resize-none"></textarea>
+                    </div>
+
+                    <!-- Batch Progress Bar when Submitting -->
+                    <div x-show="isBatchSubmitting" class="space-y-1.5 p-2 rounded-xl bg-zinc-900/80 border border-zinc-800">
+                        <div class="flex items-center justify-between text-[11px] text-zinc-400">
+                            <span>Mengantrekan download...</span>
+                            <span class="font-mono text-cyan-400 font-semibold" x-text="`${batchProgress.current}/${batchProgress.total}`"></span>
+                        </div>
+                        <div class="h-2 w-full bg-zinc-800 rounded-full overflow-hidden p-0.5">
+                            <div class="h-full bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full transition-all duration-300"
+                                 :style="`width: ${batchProgress.total ? (batchProgress.current / batchProgress.total) * 100 : 0}%`"></div>
+                        </div>
                     </div>
 
                     <button type="button" @click="submitBatchDownloads" :disabled="!batchUrls.trim() || isBatchSubmitting"
@@ -1190,6 +1316,7 @@
                 selectedPlatform: 'all', // 'all', 'youtube', 'tiktok', 'instagram', 'twitter'
                 viewMode: 'list', // 'list' | 'grid'
                 rightTab: 'player', // 'player' | 'batch'
+                isDockedPlaying: false,
                 dockedMedia: {
                     filename: '',
                     url: '',
@@ -1207,6 +1334,78 @@
                     this.fetchStorageInfo();
                     this.fetchCookieStatus();
                     this.connectWebSocket();
+                },
+
+                toggleFilter(type) {
+                    this.selectedFilter = (this.selectedFilter === type ? 'all' : type);
+                },
+
+                togglePlatform(platform) {
+                    this.selectedPlatform = (this.selectedPlatform === platform ? 'all' : platform);
+                },
+
+                setFormat(fmt) {
+                    if (this.format !== fmt) {
+                        this.format = fmt;
+                        this.showToast(`Format unduhan diatur ke ${fmt === 'video' ? 'Video (MP4)' : 'Audio (MP3)'}`, 'info');
+                    }
+                },
+
+                closeDockedPlayer() {
+                    const v = document.getElementById('dockedVideo');
+                    if (v) { v.pause(); v.src = ''; }
+                    const a = document.getElementById('dockedAudio');
+                    if (a) { a.pause(); a.src = ''; }
+                    this.dockedMedia = {
+                        filename: '',
+                        url: '',
+                        type: 'video',
+                        size: 0,
+                        created_at: null,
+                        playbackRate: 1
+                    };
+                    this.isDockedPlaying = false;
+                },
+
+                async copyFileName(filename) {
+                    if (!filename) return;
+                    try {
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            await navigator.clipboard.writeText(filename);
+                            this.showToast('Nama file berhasil disalin!', 'success');
+                            return;
+                        }
+                    } catch (e) {}
+                    this.showToast(`File: ${filename}`, 'info');
+                },
+
+                get detectedBatchUrls() {
+                    if (!this.batchUrls.trim()) return [];
+                    return this.batchUrls
+                        .split('\n')
+                        .map(u => u.trim())
+                        .filter(u => u.length > 0 && (u.startsWith('http://') || u.startsWith('https://')));
+                },
+
+                async pasteBatchFromClipboard() {
+                    try {
+                        if (navigator.clipboard && navigator.clipboard.readText) {
+                            const text = await navigator.clipboard.readText();
+                            if (text && text.trim()) {
+                                const existing = this.batchUrls.trim();
+                                this.batchUrls = existing ? existing + '\n' + text.trim() : text.trim();
+                                this.showToast('Tautan berhasil ditempel ke daftar batch!', 'success');
+                                return;
+                            }
+                        }
+                        this.showToast('Clipboard kosong atau izin belum diberikan', 'warning');
+                    } catch (e) {
+                        this.showToast('Tidak dapat membaca clipboard, silakan tempel manual', 'warning');
+                    }
+                },
+
+                clearBatchUrls() {
+                    this.batchUrls = '';
                 },
 
                 async fetchStorageInfo() {
@@ -1241,7 +1440,10 @@
                             if (p === 'youtube') return name.includes('youtube') || name.includes('youtu.be') || name.includes('yt');
                             if (p === 'tiktok') return name.includes('tiktok') || name.includes('tt');
                             if (p === 'instagram') return name.includes('instagram') || name.includes('ig') || name.includes('reel');
-                            if (p === 'twitter') return name.includes('twitter') || name.includes('x.com');
+                            if (p === 'twitter') return name.includes('twitter') || name.includes('x.com') || name.includes('tw_');
+                            if (p === 'facebook') return name.includes('facebook') || name.includes('fb');
+                            if (p === 'reddit') return name.includes('reddit');
+                            if (p === 'soundcloud') return name.includes('soundcloud');
                             return true;
                         });
                     }
@@ -1263,6 +1465,20 @@
                 },
 
                 selectForDockedPlayer(file, autoPlay = true) {
+                    if (this.dockedMedia.filename === file.name && this.dockedMedia.url) {
+                        // Toggle play/pause if clicking the active file again
+                        const el = document.getElementById(this.dockedMedia.type === 'video' ? 'dockedVideo' : 'dockedAudio');
+                        if (el) {
+                            if (el.paused) {
+                                el.play().then(() => { this.isDockedPlaying = true; }).catch(() => {});
+                            } else {
+                                el.pause();
+                                this.isDockedPlaying = false;
+                            }
+                            return;
+                        }
+                    }
+
                     this.dockedMedia = {
                         filename: file.name,
                         url: `/api/files/${encodeURIComponent(file.name)}`,
@@ -1271,13 +1487,16 @@
                         created_at: file.created_at,
                         playbackRate: 1
                     };
+                    this.isDockedPlaying = false;
                     this.rightTab = 'player';
                     if (autoPlay) {
                         this.$nextTick(() => {
                             const el = document.getElementById(this.dockedMedia.type === 'video' ? 'dockedVideo' : 'dockedAudio');
                             if (el) {
                                 el.playbackRate = 1;
-                                el.play().catch(() => {});
+                                el.play().then(() => {
+                                    this.isDockedPlaying = true;
+                                }).catch(() => {});
                             }
                         });
                     }
@@ -1468,7 +1687,7 @@
                                 if (res.ok) {
                                     this.showToast('File berhasil dihapus', 'success');
                                     if (this.dockedMedia.filename === filename) {
-                                        this.dockedMedia = { filename: '', url: '', type: 'video', size: 0, created_at: null, playbackRate: 1 };
+                                        this.closeDockedPlayer();
                                     }
                                     this.fetchFiles();
                                 } else {
@@ -1491,7 +1710,7 @@
                                 const res = await fetch('/api/files', { method: 'DELETE' });
                                 if (res.ok) {
                                     this.showToast('Semua file berhasil dibersihkan', 'success');
-                                    this.dockedMedia = { filename: '', url: '', type: 'video', size: 0, created_at: null, playbackRate: 1 };
+                                    this.closeDockedPlayer();
                                     this.fetchFiles();
                                 } else {
                                     this.showToast('Gagal menghapus file', 'error');
