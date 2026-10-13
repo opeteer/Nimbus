@@ -15,7 +15,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.background import BackgroundTask
 from pydantic import BaseModel
 
-APP_VERSION = "1.0.1"
+APP_VERSION = "1.0.2"
 app = FastAPI(title="Nimbus Web Downloader", version=APP_VERSION)
 
 # Configuration
@@ -139,7 +139,29 @@ def download_hook(d, task_id):
             "eta": "00:00"
         })
 
-def run_download(url: str, format_type: str, task_id: str):
+def build_ytdlp_format(format_type: str, quality: str = "best"):
+    """
+    Build yt-dlp format specification and format_sort order.
+    Returns: (format_string, format_sort_list)
+    """
+    if format_type == "audio":
+        return "bestaudio/best", []
+    
+    quality_map = {
+        "best": "bestvideo*+bestaudio/best",
+        "1080p": "bestvideo*[height<=1080]+bestaudio/best[height<=1080]/best",
+        "720p": "bestvideo*[height<=720]+bestaudio/best[height<=720]/best",
+        "480p": "bestvideo*[height<=480]+bestaudio/best[height<=480]/best",
+        "360p": "bestvideo*[height<=360]+bestaudio/best[height<=360]/best",
+    }
+    
+    fmt = quality_map.get(quality, quality_map["best"])
+    # Prioritize resolution first, then framerate, prefer h264 for wide compatibility
+    # but seamlessly accept vp9/av1 if higher resolution or only codec available.
+    format_sort = ["res", "fps", "vcodec:h264,vp9", "acodec:m4a,aac,opus"]
+    return fmt, format_sort
+
+def run_download(url: str, format_type: str, quality: str, task_id: str):
     cookies_path = get_cookies_path()
 
     ydl_opts = {
@@ -148,11 +170,6 @@ def run_download(url: str, format_type: str, task_id: str):
         'progress_hooks': [lambda d: download_hook(d, task_id)],
         'quiet': True,
         'no_warnings': True,
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['ios', 'android', 'mweb']
-            }
-        },
         'http_headers': {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
             'Accept-Language': 'en-US,en;q=0.9',
@@ -161,17 +178,33 @@ def run_download(url: str, format_type: str, task_id: str):
     
     if cookies_path:
         ydl_opts['cookiefile'] = cookies_path
+        # When cookies are supplied, prioritize web client for full 4K/8K resolution
+        ydl_opts['extractor_args'] = {
+            'youtube': {
+                'player_client': ['web', 'android', 'ios']
+            }
+        }
+    else:
+        # Without cookies, prioritize android (which supports 1080p/4K DASH streams),
+        # with ios, mweb, and web fallbacks to avoid bot challenge blocks.
+        ydl_opts['extractor_args'] = {
+            'youtube': {
+                'player_client': ['android', 'ios', 'mweb', 'web']
+            }
+        }
+    
+    fmt, format_sort = build_ytdlp_format(format_type, quality)
+    ydl_opts['format'] = fmt
+    if format_sort:
+        ydl_opts['format_sort'] = format_sort
     
     if format_type == 'audio':
-        ydl_opts['format'] = 'bestaudio/best'
         ydl_opts['postprocessors'] = [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }]
     else:
-        # Default to best video (MP4)
-        ydl_opts['format'] = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
         ydl_opts['merge_output_format'] = 'mp4'
 
     try:
@@ -278,9 +311,10 @@ async def logout():
 class DownloadRequest(BaseModel):
     url: str
     format: str = "video" # 'video' or 'audio'
+    quality: Optional[str] = "best" # 'best', '1080p', '720p', '480p', '360p'
 
-async def download_worker(url: str, format_type: str, task_id: str):
-    await asyncio.to_thread(run_download, url, format_type, task_id)
+async def download_worker(url: str, format_type: str, quality: str, task_id: str):
+    await asyncio.to_thread(run_download, url, format_type, quality, task_id)
     # Retain task status for a grace period so connected WebSocket clients receive final status
     await asyncio.sleep(10)
     downloads_state.pop(task_id, None)
@@ -296,11 +330,12 @@ async def start_download(req: DownloadRequest):
         "progress_percent": "0%",
         "speed": "0MiB/s",
         "eta": "--:--",
-        "format": req.format
+        "format": req.format,
+        "quality": req.quality or "best"
     }
     
     # Run download worker in a background task
-    asyncio.create_task(download_worker(req.url, req.format, task_id))
+    asyncio.create_task(download_worker(req.url, req.format, req.quality or "best", task_id))
     
     return {"status": "ok", "task_id": task_id}
 

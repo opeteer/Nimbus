@@ -18,9 +18,11 @@
 ## ✨ Features
 
 - **Universal Quick-Input**: Just paste the URL and hit Enter. Automatically detects the link and starts downloading.
-- **Real-Time Progress**: Watch your downloads progress in real-time. Displays animated progress bars, speed, and ETA powered by WebSockets.
-- **Format Toggle**: Easily switch between downloading the Best Quality Video (MP4) or Audio Only (MP3/M4A) via a sleek toggle.
-- **YouTube Cookie Manager & Anti-Bot Bypass**: Built-in support for YouTube mobile player clients and web-based `cookies.txt` upload to seamlessly bypass bot verification and age restrictions.
+- **Configurable Video Quality**: Choose between **Best / Max (4K/HD)**, **1080p Full HD**, **720p HD**, **480p SD**, or **360p Data Saver**. Your preference is automatically remembered.
+- **Real-Time Progress**: Watch your downloads progress in real-time. Displays animated progress bars, speed, ETA, and target quality powered by WebSockets.
+- **Format Toggle**: Easily switch between downloading Video (MP4) with custom resolutions or Audio Only (MP3 192kbps) via a sleek toggle.
+- **YouTube High-Fidelity & Anti-Bot Engine (v1.0.2)**: Intelligently merges separate high-resolution DASH video and audio streams using `ffmpeg`, preventing 360p fallback while maintaining anti-bot mobile client resilience.
+- **YouTube Cookie Manager**: Built-in web-based `cookies.txt` upload to seamlessly bypass bot verification and age restrictions with full 4K/8K fidelity.
 - **Mini File Manager**: View, play, download to your local machine, or delete completed files directly from the dashboard.
 - **Bulk ZIP Download**: Download all stored files on the server in a single compressed `.zip` archive with one click.
 - **Bulk Delete**: Delete all completed files stored on the server with a single click and safety confirmation.
@@ -67,7 +69,7 @@ The easiest way to run Nimbus is via Docker. This ensures all dependencies (incl
    Open your browser and navigate to `http://localhost:8000` (or your server's IP address).
    Log in with your configured password.
 
-## 🍪 YouTube Bot Protection & Cookies (v1.0.1)
+## 🍪 YouTube High-Fidelity & Anti-Bot Engine (v1.0.2)
 
 YouTube frequently enforces anti-bot challenges (*"Sign in to confirm you're not a bot"*) on server and datacenter IP addresses:
 - **Automatic Mobile Client Fallback**: Nimbus automatically configures `yt-dlp` to query YouTube via mobile player clients (`ios`, `android`, `mweb`), resolving the majority of bot detection blocks out of the box without manual configuration.
