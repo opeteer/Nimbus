@@ -256,6 +256,12 @@ class DownloadRequest(BaseModel):
     url: str
     format: str = "video" # 'video' or 'audio'
 
+async def download_worker(url: str, format_type: str, task_id: str):
+    await asyncio.to_thread(run_download, url, format_type, task_id)
+    # Retain task status for a grace period so connected WebSocket clients receive final status
+    await asyncio.sleep(10)
+    downloads_state.pop(task_id, None)
+
 @app.post("/api/download", dependencies=[Depends(check_auth)])
 async def start_download(req: DownloadRequest):
     task_id = str(uuid.uuid4())
@@ -270,8 +276,8 @@ async def start_download(req: DownloadRequest):
         "format": req.format
     }
     
-    # Run download in a background thread to not block the event loop
-    asyncio.create_task(asyncio.to_thread(run_download, req.url, req.format, task_id))
+    # Run download worker in a background task
+    asyncio.create_task(download_worker(req.url, req.format, task_id))
     
     return {"status": "ok", "task_id": task_id}
 

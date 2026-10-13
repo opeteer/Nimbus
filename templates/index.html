@@ -642,7 +642,7 @@
                 <svg x-show="toast.type === 'warning'" class="w-5 h-5 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
 
                 <p class="text-xs sm:text-sm font-medium flex-grow break-words" x-text="toast.message"></p>
-                <button type="button" @click="toast.show = false" class="text-zinc-500 hover:text-white p-1 rounded-lg">
+                <button type="button" @click="closeToast()" aria-label="Tutup notifikasi" class="text-zinc-500 hover:text-white p-1 rounded-lg shrink-0 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
@@ -669,6 +669,8 @@
                 hasCookies: false,
                 cookieInfo: null,
                 toast: { show: false, message: '', type: 'info', timer: null },
+                handledTaskIds: {},
+                wsInitialStateLoaded: false,
 
                 initApp() {
                     this.fetchFiles();
@@ -691,8 +693,16 @@
                     this.toast.show = true;
                     if (this.toast.timer) clearTimeout(this.toast.timer);
                     this.toast.timer = setTimeout(() => {
-                        this.toast.show = false;
+                        this.closeToast();
                     }, 4000);
+                },
+
+                closeToast() {
+                    this.toast.show = false;
+                    if (this.toast.timer) {
+                        clearTimeout(this.toast.timer);
+                        this.toast.timer = null;
+                    }
                 },
 
                 // 1-Tap Paste from clipboard (Mobile superpower)
@@ -955,18 +965,43 @@
                             let hasCompletedOrError = false;
                             const active = {};
                             
+                            // On first message upon connection, seed already-finished tasks
+                            // so we don't display stale notifications from earlier downloads
+                            if (!this.wsInitialStateLoaded) {
+                                for (const [id, task] of Object.entries(state)) {
+                                    if (task.status === 'completed' || task.status === 'error') {
+                                        this.handledTaskIds[id] = task.status;
+                                    } else {
+                                        active[id] = task;
+                                    }
+                                }
+                                this.activeDownloads = active;
+                                this.wsInitialStateLoaded = true;
+                                return;
+                            }
+
                             for (const [id, task] of Object.entries(state)) {
                                 if (task.status === 'completed') {
-                                    if (!this.activeDownloads[id] || this.activeDownloads[id].status !== 'completed') {
+                                    if (this.handledTaskIds[id] !== 'completed') {
+                                        this.handledTaskIds[id] = 'completed';
                                         hasCompletedOrError = true;
                                         this.showToast(`Selesai diunduh: ${task.title || 'File'}`, 'success');
                                     }
                                 } else if (task.status === 'error') {
-                                    if (!this.activeDownloads[id] || this.activeDownloads[id].status !== 'error') {
+                                    if (this.handledTaskIds[id] !== 'error') {
+                                        this.handledTaskIds[id] = 'error';
+                                        hasCompletedOrError = true;
                                         this.showToast(`Gagal: ${task.error || 'Terjadi kesalahan saat download'}`, 'error');
                                     }
                                 } else {
                                     active[id] = task;
+                                }
+                            }
+                            
+                            // Prune handledTaskIds for tasks that the server has removed
+                            for (const id of Object.keys(this.handledTaskIds)) {
+                                if (!state[id]) {
+                                    delete this.handledTaskIds[id];
                                 }
                             }
                             
