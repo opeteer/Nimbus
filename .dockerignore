@@ -1,0 +1,14 @@
+.git
+.github
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+downloads/
+.env
+.env.*
+.DS_Store
+Thumbs.db
+*.log
+venv/
+.venv/

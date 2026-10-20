@@ -13,10 +13,10 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2322d3ee%22 stroke-width=%222%22><path stroke-linecap=%22round%22 stroke-linejoin=%22round%22 d=%22M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z%22/></svg>">
     
     <!-- Local Compiled Tailwind CSS with CDN Fallback -->
-    <link rel="stylesheet" href="/static/css/tailwind.css" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.tailwindcss.com';document.head.appendChild(s);">
+    <link rel="stylesheet" href="{{ base_path }}/static/css/tailwind.css" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.tailwindcss.com';document.head.appendChild(s);">
     
     <!-- Local Alpine.js with CDN Fallback -->
-    <script defer src="/static/js/alpine.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js';s.defer=true;document.head.appendChild(s);"></script>
+    <script defer src="{{ base_path }}/static/js/alpine.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js';s.defer=true;document.head.appendChild(s);"></script>
 
     <style>
         :root {
@@ -223,7 +223,7 @@
             </div>
             {% endif %}
             
-            <form action="/api/login" method="POST" class="space-y-4 relative z-10">
+            <form action="{{ base_path }}/api/login" method="POST" class="space-y-4 relative z-10">
                 <div>
                     <label class="block text-xs font-medium text-zinc-400 mb-1.5 ml-1">Password Akses</label>
                     <input type="password" name="password" required autocomplete="current-password"
@@ -283,7 +283,7 @@
                     <span class="hidden sm:inline">Cookies</span>
                 </button>
 
-                <form action="/api/logout" method="POST">
+                <form action="{{ base_path }}/api/logout" method="POST">
                     <button type="submit" class="text-xs sm:text-sm font-medium text-zinc-400 hover:text-white px-2.5 py-2 sm:px-3 rounded-lg hover:bg-zinc-800/60 active:scale-95 transition-all flex items-center gap-1.5">
                         <svg class="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
@@ -819,7 +819,7 @@
                                 </button>
 
                                 <!-- Direct Download Button -->
-                                <a :href="`/api/files/${encodeURIComponent(file.name)}?download=1`"
+                                <a :href="`${basePath}/api/files/${encodeURIComponent(file.name)}?download=1`"
                                     class="w-9 h-9 flex items-center justify-center text-zinc-300 hover:text-cyan-400 bg-zinc-800/60 hover:bg-zinc-700/80 rounded-xl transition-all active:scale-90"
                                     title="Simpan file ke perangkat">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
@@ -910,7 +910,7 @@
                                         <button @click="selectForDockedPlayer(file)" class="p-1 hover:text-cyan-400 text-zinc-400 transition-colors" title="Putar di Sidebar">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>
                                         </button>
-                                        <a :href="`/api/files/${encodeURIComponent(file.name)}?download=1`" class="p-1 hover:text-cyan-400 text-zinc-400 transition-colors" title="Download">
+                                        <a :href="`${basePath}/api/files/${encodeURIComponent(file.name)}?download=1`" class="p-1 hover:text-cyan-400 text-zinc-400 transition-colors" title="Download">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                         </a>
                                         <button @click="shareFile(file.name)" class="p-1 hover:text-emerald-400 text-zinc-400 transition-colors" title="Bagikan file">
@@ -1082,7 +1082,7 @@
 
                         <!-- Quick Action Buttons -->
                         <div class="grid grid-cols-2 gap-2 pt-2 border-t border-zinc-800/60">
-                            <a :href="`/api/files/${encodeURIComponent(dockedMedia.filename)}?download=1`"
+                            <a :href="`${basePath}/api/files/${encodeURIComponent(dockedMedia.filename)}?download=1`"
                                 class="w-full bg-cyan-600 hover:bg-cyan-500 text-white py-2 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
@@ -1249,7 +1249,7 @@
                     </button>
 
                     <div class="flex items-center gap-2">
-                        <a :href="`/api/files/${encodeURIComponent(preview.filename)}?download=1`"
+                        <a :href="`${basePath}/api/files/${encodeURIComponent(preview.filename)}?download=1`"
                             class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs sm:text-sm font-medium flex items-center gap-2 active:scale-95 transition-all shadow-md shadow-cyan-950/40">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
@@ -1406,6 +1406,10 @@
     <script>
         function nimbusApp() {
             return {
+                basePath: '{{ base_path }}' || (window.location.pathname.replace(/\/+$/, '')),
+                api(path) {
+                    return `${this.basePath}${path}`;
+                },
                 url: '',
                 format: 'video',
                 quality: localStorage.getItem('nimbus_video_quality') || 'best',
@@ -1577,7 +1581,7 @@
                 async fetchStorageInfo() {
                     this.storage.loading = true;
                     try {
-                        const res = await fetch('/api/system/storage');
+                        const res = await fetch(this.api('/api/system/storage'));
                         if (res.ok) {
                             const data = await res.json();
                             this.storage = { ...this.storage, ...data, loading: false };
@@ -1647,7 +1651,7 @@
 
                     this.dockedMedia = {
                         filename: file.name,
-                        url: `/api/files/${encodeURIComponent(file.name)}`,
+                        url: this.api(`/api/files/${encodeURIComponent(file.name)}`),
                         type: this.isAudio(file.name) ? 'audio' : 'video',
                         size: file.size,
                         created_at: file.created_at,
@@ -1705,7 +1709,7 @@
                     for (let i = 0; i < urls.length; i++) {
                         this.batchProgress.current = i + 1;
                         try {
-                            const res = await fetch('/api/download', {
+                            const res = await fetch(this.api('/api/download'), {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ url: urls[i], format: this.format, quality: this.quality })
@@ -1760,7 +1764,7 @@
                     if (!this.url.trim()) return;
                     this.isSubmitting = true;
                     try {
-                        const res = await fetch('/api/download', {
+                        const res = await fetch(this.api('/api/download'), {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ url: this.url.trim(), format: this.format, quality: this.quality })
@@ -1781,7 +1785,7 @@
                 async fetchFiles() {
                     this.isRefreshing = true;
                     try {
-                        const res = await fetch('/api/files');
+                        const res = await fetch(this.api('/api/files'));
                         if (res.ok) {
                             const data = await res.json();
                             this.files = data.files || [];
@@ -1790,7 +1794,7 @@
                                 const f = this.files[0];
                                 this.dockedMedia = {
                                     filename: f.name,
-                                    url: `/api/files/${encodeURIComponent(f.name)}`,
+                                    url: this.api(`/api/files/${encodeURIComponent(f.name)}`),
                                     type: this.isAudio(f.name) ? 'audio' : 'video',
                                     size: f.size,
                                     created_at: f.created_at,
@@ -1807,7 +1811,7 @@
 
                 // Native Mobile Share API
                 async shareFile(filename) {
-                    const fileUrl = `${window.location.origin}/api/files/${encodeURIComponent(filename)}`;
+                    const fileUrl = `${window.location.origin}${this.api('/api/files/' + encodeURIComponent(filename))}`;
                     if (navigator.share) {
                         try {
                             await navigator.share({
@@ -1826,12 +1830,12 @@
                 },
 
                 copyLink(filename) {
-                    const fileUrl = `${window.location.origin}/api/files/${encodeURIComponent(filename)}`;
+                    const fileUrl = `${window.location.origin}${this.api('/api/files/' + encodeURIComponent(filename))}`;
                     this.copyToClipboard(fileUrl, 'Tautan file langsung disalin ke clipboard!');
                 },
 
                 downloadZip() {
-                    window.location.href = '/api/files/download/zip';
+                    window.location.href = this.api('/api/files/download/zip');
                     this.showToast('Menyiapkan file ZIP untuk diunduh...', 'info');
                 },
 
@@ -1842,7 +1846,7 @@
                         message: `Apakah Anda yakin ingin menghapus "${filename}"? File akan dihapus permanen dari server.`,
                         action: async () => {
                             try {
-                                const res = await fetch(`/api/files/${encodeURIComponent(filename)}`, { method: 'DELETE' });
+                                const res = await fetch(this.api(`/api/files/${encodeURIComponent(filename)}`), { method: 'DELETE' });
                                 if (res.ok) {
                                     this.showToast('File berhasil dihapus', 'success');
                                     if (this.dockedMedia.filename === filename) {
@@ -1866,7 +1870,7 @@
                         message: `PERINGATAN: Semua (${this.files.length}) file yang telah diunduh di server akan dihapus secara permanen. Tindakan ini tidak dapat dibatalkan!`,
                         action: async () => {
                             try {
-                                const res = await fetch('/api/files', { method: 'DELETE' });
+                                const res = await fetch(this.api('/api/files'), { method: 'DELETE' });
                                 if (res.ok) {
                                     this.showToast('Semua file berhasil dibersihkan', 'success');
                                     this.closeDockedPlayer();
@@ -1891,7 +1895,7 @@
 
                 previewFile(filename) {
                     this.preview.filename = filename;
-                    this.preview.url = `/api/files/${encodeURIComponent(filename)}`;
+                    this.preview.url = this.api(`/api/files/${encodeURIComponent(filename)}`);
                     this.preview.type = this.isAudio(filename) ? 'audio' : 'video';
                     this.preview.show = true;
                 },
@@ -1909,7 +1913,7 @@
 
                 async fetchCookieStatus() {
                     try {
-                        const res = await fetch('/api/cookies');
+                        const res = await fetch(this.api('/api/cookies'));
                         if (res.ok) {
                             const data = await res.json();
                             this.hasCookies = data.has_cookies;
@@ -1928,7 +1932,7 @@
                     formData.append('file', file);
 
                     try {
-                        const res = await fetch('/api/cookies/upload', {
+                        const res = await fetch(this.api('/api/cookies/upload'), {
                             method: 'POST',
                             body: formData
                         });
@@ -1953,7 +1957,7 @@
                     formData.append('content', this.cookieModal.content.trim());
 
                     try {
-                        const res = await fetch('/api/cookies/upload', {
+                        const res = await fetch(this.api('/api/cookies/upload'), {
                             method: 'POST',
                             body: formData
                         });
@@ -1973,7 +1977,7 @@
 
                 async deleteCookies() {
                     try {
-                        const res = await fetch('/api/cookies', { method: 'DELETE' });
+                        const res = await fetch(this.api('/api/cookies'), { method: 'DELETE' });
                         if (res.ok) {
                             this.showToast('Cookies berhasil dihapus', 'success');
                             await this.fetchCookieStatus();
@@ -1997,7 +2001,7 @@
 
                 connectWebSocket() {
                     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                    this.ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+                    this.ws = new WebSocket(`${protocol}//${window.location.host}${this.basePath}/ws`);
                     
                     this.ws.onopen = () => {
                         this.isWsConnected = true;

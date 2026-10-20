@@ -244,7 +244,8 @@ def run_download(url: str, format_type: str, quality: str, task_id: str):
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     is_auth = get_auth_optional(request)
-    return templates.TemplateResponse(request=request, name="index.html", context={"is_auth": is_auth, "app_version": APP_VERSION})
+    prefix = request.headers.get("x-forwarded-prefix", "")
+    return templates.TemplateResponse(request=request, name="index.html", context={"is_auth": is_auth, "app_version": APP_VERSION, "base_path": prefix})
 
 # --- Cookie Management Endpoints ---
 
@@ -310,17 +311,22 @@ async def delete_cookies():
     return {"status": "ok", "message": "Tidak ada file cookies yang aktif"}
 
 @app.post("/api/login")
-async def login(password: str = Form(...)):
+async def login(request: Request, password: str = Form(...)):
+    prefix = request.headers.get("x-forwarded-prefix", "")
+    target = f"{prefix}/" if prefix else "/"
     if password == NIMBUS_PASSWORD:
-        response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
-        response.set_cookie(key="nimbus_session", value=password, httponly=True, max_age=86400 * 30)
+        response = RedirectResponse(url=target, status_code=status.HTTP_302_FOUND)
+        response.set_cookie(key="nimbus_session", value=password, httponly=True, max_age=86400 * 30, path=prefix or "/")
         return response
-    return RedirectResponse(url="/?error=1", status_code=status.HTTP_302_FOUND)
+    err_target = f"{prefix}/?error=1" if prefix else "/?error=1"
+    return RedirectResponse(url=err_target, status_code=status.HTTP_302_FOUND)
 
 @app.post("/api/logout")
-async def logout():
-    response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
-    response.delete_cookie("nimbus_session")
+async def logout(request: Request):
+    prefix = request.headers.get("x-forwarded-prefix", "")
+    target = f"{prefix}/" if prefix else "/"
+    response = RedirectResponse(url=target, status_code=status.HTTP_302_FOUND)
+    response.delete_cookie("nimbus_session", path=prefix or "/")
     return response
 
 class DownloadRequest(BaseModel):
