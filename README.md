@@ -21,7 +21,7 @@
 - **Configurable Video Quality**: Choose between **Best / Max (4K/HD)**, **1080p Full HD**, **720p HD**, **480p SD**, or **360p Data Saver**. Your preference is automatically remembered.
 - **Real-Time Progress**: Watch your downloads progress in real-time. Displays animated progress bars, speed, ETA, and target quality powered by WebSockets.
 - **Format Toggle**: Easily switch between downloading Video (MP4) with custom resolutions or Audio Only (MP3 192kbps) via a sleek toggle.
-- **YouTube High-Fidelity & Anti-Bot Engine (v1.0.2)**: Intelligently merges separate high-resolution DASH video and audio streams using `ffmpeg`, preventing 360p fallback while maintaining anti-bot mobile client resilience.
+- **YouTube High-Fidelity & Anti-Bot Engine (v1.0.4)**: Intelligently merges separate high-resolution DASH video and audio streams using `ffmpeg`, preventing 360p fallback while maintaining anti-bot mobile client resilience.
 - **YouTube Cookie Manager**: Built-in web-based `cookies.txt` upload to seamlessly bypass bot verification and age restrictions with full 4K/8K fidelity.
 - **Mini File Manager**: View, play, download to your local machine, or delete completed files directly from the dashboard.
 - **Bulk ZIP Download**: Download all stored files on the server in a single compressed `.zip` archive with one click.

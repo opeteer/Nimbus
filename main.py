@@ -15,7 +15,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.background import BackgroundTask
 from pydantic import BaseModel
 
-APP_VERSION = "1.0.3"
+APP_VERSION = "1.0.4"
 app = FastAPI(title="Nimbus Web Downloader", version=APP_VERSION)
 
 # Configuration
