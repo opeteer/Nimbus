@@ -32,10 +32,11 @@
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Python 3.11, [FastAPI](https://fastapi.tiangolo.com/), `uvicorn`, `websockets`
+- **Backend**: Python 3.12, [FastAPI](https://fastapi.tiangolo.com/), `uvicorn`, `websockets`
 - **Download Engine**: [`yt-dlp`](https://github.com/yt-dlp/yt-dlp), `ffmpeg`
 - **Frontend**: HTML5, [Tailwind CSS](https://tailwindcss.com/) (CDN), [Alpine.js](https://alpinejs.dev/) (CDN)
-- **Deployment**: Docker & Docker Compose
+- **Deployment**: Docker Compose & GitHub Container Registry (`ghcr.io/opeteer/nimbus`)
+- **Gateway**: Rocky Gateway Platform (Tailscale Funnel & Nginx Reverse Proxy)
 
 ## 🚀 Quick Start (Docker)
 
