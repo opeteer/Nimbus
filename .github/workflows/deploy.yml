@@ -40,6 +40,32 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Ensure Provisioning via Rocky Bot (Zero-Touch Onboarding)
+        if: ${{ env.WATCHTOWER_URL != '' }}
+        env:
+          WATCHTOWER_URL: ${{ secrets.WATCHTOWER_WEBHOOK_URL }}
+        run: |
+          BASE_URL="${WATCHTOWER_URL%/v1/update}"
+          echo "🤖 Mengirim sinyal registrasi ke Rocky Provisioning Bot..."
+          curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.WATCHTOWER_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "name": "nimbus",
+              "title": "Nimbus Downloader",
+              "image": "ghcr.io/${{ github.repository_owner }}/nimbus:latest",
+              "port": 8000,
+              "path": "/nimbus/",
+              "icon": "⚡",
+              "desc": "Platform self-hosted media & video downloader modern bertenaga yt-dlp, FastAPI, dan WebSockets.",
+              "tags": "FastAPI,Python 3.12,yt-dlp,GHCR,Alpine",
+              "websocket": true,
+              "volumes": ["nimbus_downloads:/app/downloads"],
+              "env": ["NIMBUS_PASSWORD=${NIMBUS_PASSWORD:-nimbus123}"]
+            }' \
+            "${BASE_URL}/api/provision" || true
+          echo "✅ Sinyal provisioning selesai!"
+
       - name: Trigger Watchtower Webhook
         if: ${{ env.WATCHTOWER_URL != '' }}
         env:
