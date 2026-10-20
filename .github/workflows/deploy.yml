@@ -1,52 +1,53 @@
-name: Build, Publish & Deploy Nimbus
+name: Build, Push to GHCR, and Trigger Server Deploy
 
 on:
   push:
-    branches: [ "master", "main" ]
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+    branches:
+      - master
+      - main
+  workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  build-push-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Source Code
         uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to GitHub Container Registry (GHCR)
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=latest
-            type=sha,format=short
-
-      - name: Build and push OCI Image to GHCR
+      - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ./Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/nimbus:latest
+            ghcr.io/${{ github.repository_owner }}/nimbus:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Trigger Central Watchtower CD on Server Rocky
+      - name: Trigger Watchtower Webhook
+        if: ${{ env.WATCHTOWER_URL != '' }}
+        env:
+          WATCHTOWER_URL: ${{ secrets.WATCHTOWER_WEBHOOK_URL }}
         run: |
-          echo "🚀 Mengirim webhook deploy ke server rocky..."
-          curl -s -X POST \
+          echo "🚀 Mengirim sinyal deploy asinkron ke Central Watchtower di server rocky..."
+          BASE_URL="${WATCHTOWER_URL%/v1/update}"
+          curl -f -X POST \
             -H "Authorization: Bearer ${{ secrets.WATCHTOWER_TOKEN }}" \
-            --max-time 15 \
-            "${{ secrets.WATCHTOWER_WEBHOOK_URL }}" || true
+            "${BASE_URL}/v1/update?async=true" || true
+          echo "✅ Sinyal deployment berhasil diterima oleh server rocky!"
